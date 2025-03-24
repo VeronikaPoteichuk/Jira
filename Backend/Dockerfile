@@ -7,34 +7,29 @@ RUN apt-get update && \
     python3-venv && \
     rm -rf /var/lib/apt/lists/*
 
-# Создаем виртуальное окружение и устанавливаем uv
-RUN python -m venv /opt/venv && \
-    /opt/venv/bin/pip install --no-cache-dir --upgrade pip && \
-    /opt/venv/bin/pip install --no-cache-dir uv==0.6.4
-
+# Создаем виртуальное окружение
+RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
+
+# Устанавливаем pip-tools для генерации requirements
+RUN pip install --no-cache-dir pip-tools==7.4.1
 
 WORKDIR /app
 
-COPY requirements.txt .
+# Копируем .in файлы
+COPY requirements.in requirements_tests.in ./
 
-RUN /opt/venv/bin/python -m pip install --no-cache-dir -r requirements.txt
+# Генерируем requirements.txt
+RUN pip-compile --strip-extras requirements.in -o requirements.txt && \
+    pip-compile --strip-extras requirements_tests.in -o requirements_tests.txt
+
+# Устанавливаем зависимости
+RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver "]
+CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
 
 FROM base AS tests
 
-WORKDIR /app
-
-RUN set -e && apt-get update && \
-    apt-get install -y --no-install-recommends git=1:2.39.5-0+deb12u2 && \
-    uv pip install --no-cache-dir pip-tools==7.4.1 pre-commit==4.1.0 && \
-    rm -rf /var/lib/apt/lists/* && \
-    git config --global --add safe.directory /app
-
-COPY requirements.txt requirements_tests.txt ./
-
-RUN uv pip install --no-cache-dir -r requirements.txt && \
-    uv pip install --no-cache-dir -r requirements_tests.txt
+RUN pip install --no-cache-dir -r requirements_tests.txt

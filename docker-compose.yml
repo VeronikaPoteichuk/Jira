@@ -11,7 +11,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
           - "5433:5432"
-  
+
   backend:
     build:
       context: Backend
@@ -22,11 +22,12 @@ services:
     ports:
       - "8001:8000"
     depends_on:
+      - pip-compile-django
       - db
     environment:
       DB_NAME: ${DB_NAME:-docker_db}
       DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-rostgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
       DB_HOST: ${DB_HOST_DC:-db}
       DB_PORT: ${DB_PORT:-5432}
     command:
@@ -60,10 +61,12 @@ services:
     volumes:
       - ./Backend:/app
     working_dir: /app
-    entrypoint: ["sh", "-c"]
     command:
-      - pip-compile --strip-extras requirements.in
-      - pip-compile --strip-extras requirements_tests.in
+      - /bin/sh
+      - -c
+      - |
+        pip-compile --strip-extras requirements.in
+        pip-compile --strip-extras requirements_tests.in
 
 volumes:
   postgres_data:
