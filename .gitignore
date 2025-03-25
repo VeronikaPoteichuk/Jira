@@ -56,3 +56,9 @@ venv/
 # Tests
 .pytest_cache
 .pytest_cache/
+.coverage
+
+
+# Config
+/backend.egg-info
+/build
