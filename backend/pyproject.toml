@@ -4,11 +4,11 @@ version = "0.1.0"
 readme = "README.md"
 authors = [{ name = "Veranika Patseichuk", email = "VeranikaPatseichuk@ventionteams.com" }]
 dependencies = [
+    "Django>=5.1.7",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "Django>=5.1.7",
     "djangorestframework>=3.15.2",
     "django-cors-headers>=4.3.1",
     "dotenv>=0.9.9",
@@ -16,7 +16,7 @@ dev = [
     "drf-spectacular-sidecar>=2025.3.1",
     "psycopg2-binary>=2.9.10",
     "python-dotenv>=1.0.1",
-    "gunicorn>=23.0.0",
+    "uvicorn>=0.34.0",
     "requests>=2.32.3",
     "types-requests>=2.32.0.20250306",
     ]
@@ -26,4 +26,9 @@ test = [
     "pytest-xdist>=3.6",
     "pytest-django>=4.10.0",
     "pytest-cov>=6.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.2.0",
 ]

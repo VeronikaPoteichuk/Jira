@@ -17,19 +17,18 @@ WORKDIR /app
 
 COPY pyproject.toml ./
 
-RUN uv pip compile pyproject.toml --extra dev -o requirements.txt && \
-    uv pip install --no-cache-dir -r requirements.txt
+RUN uv pip install --no-cache-dir ".[dev]"
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+CMD ["sh", "-c", "python manage.py migrate && uvicorn jira.asgi:application --reload"]
 
 FROM base AS tests
 
 WORKDIR /app
 
 RUN set -e && apt-get update && \
-    apt-get install -y --no-install-recommends git=1:2.39.5-0+deb12u2 && \ 
+    apt-get install -y --no-install-recommends git=1:2.39.5-0+deb12u2 && \
     uv pip install --no-cache-dir pip-tools==7.4.1 pre-commit==4.1.0 && \
     uv venv /opt/venv && \
     apt-get clean && \
@@ -39,7 +38,6 @@ RUN python3 -m venv /opt/venv
 
 COPY pyproject.toml ./
 
-RUN uv pip compile pyproject.toml --extra test -o requirements_tests.txt && \
-    uv pip compile pyproject.toml --extra dev -o requirements.txt && \
-    uv pip install --no-cache-dir -r requirements.txt && \
-    uv pip install --no-cache-dir -r requirements_tests.txt
+RUN uv pip install --no-cache-dir ".[dev,test]"
+
+CMD ["sh", "-c", "python manage.py migrate && pytest"]

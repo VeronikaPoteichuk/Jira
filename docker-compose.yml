@@ -25,7 +25,6 @@ services:
     ports:
       - "8001:8000"
     depends_on:
-      - pip-compile-django
       - db
     environment:
       DB_NAME: ${DB_NAME:-docker_db}
@@ -35,10 +34,8 @@ services:
       DB_PORT: ${DB_PORT:-5432}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
       DJANGO_DEBUG: ${DJANGO_DEBUG}
-    command:
-      - sh
-      - -c
-      - "python manage.py migrate && python manage.py runserver"
+    command: >
+      sh -c "python manage.py migrate && python manage.py runserver"
 
   tests:
     build:
@@ -47,7 +44,6 @@ services:
     volumes:
       - ./backend:/app
     depends_on:
-      - pip-compile-django
       - backend
       - db
     environment:
@@ -58,23 +54,9 @@ services:
       DB_PORT: ${DB_PORT:-5432}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
       DJANGO_DEBUG: ${DJANGO_DEBUG}
-    command:
-      - sh
-      - -c
-      - "python manage.py migrate && pytest"
-
-  pip-compile-django:
-    build:
-      context: backend
-      target: tests
-    volumes:
-      - ./backend:/app
-    working_dir: /app
     command: >
-      sh -c "
-        uv pip compile pyproject.toml --extra dev -o requirements.txt
-        uv pip compile pyproject.toml --extra test -o requirements_tests.txt
-      "
+      sh -c "python manage.py migrate && pytest"
+
 
 volumes:
   postgres_data:
