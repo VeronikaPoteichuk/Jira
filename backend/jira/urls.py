@@ -24,6 +24,7 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
+from users.views import test_user
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -32,6 +33,7 @@ urlpatterns = [
         "swagger/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"
     ),
     path("redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+    path("test/", test_user, name="test-user"),
 ]
 
 
