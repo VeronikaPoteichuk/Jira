@@ -64,7 +64,7 @@ class TestRestFrameworkSettings:
 class TestStaticFilesSettings:
     def test_static_config(self):
         assert settings.STATIC_URL == "/static/"
-        assert settings.STATIC_ROOT == "/app/static/"
+        assert settings.STATIC_ROOT == "static/"
         assert settings.DEFAULT_AUTO_FIELD == "django.db.models.BigAutoField"
 
 

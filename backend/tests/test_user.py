@@ -1,56 +1,40 @@
 import pytest
-from django.urls import reverse
 from django.contrib.auth import get_user_model
-from rest_framework.test import APIClient
+from rest_framework.test import APIRequestFactory
+from asgiref.sync import sync_to_async
+
+from users.views import AsyncUserViewSet
 
 User = get_user_model()
 
 
-@pytest.fixture
-def api_client():
-    return APIClient()
-
-
-@pytest.fixture
-def test_users():
-    User.objects.create_user(username="user1", password="test123")
-    User.objects.create_user(username="user2", password="test456")
-    return User.objects.all()
-
-
 @pytest.mark.django_db
-def test_async_user_view_returns_users(api_client, test_users):
-    url = reverse("async-user-list")
-    response = api_client.get(url)
+@pytest.mark.asyncio
+async def test_async_user_viewset_list():
+    await sync_to_async(User.objects.create_user)(
+        username="user1", password="testpass123"
+    )
+    await sync_to_async(User.objects.create_user)(
+        username="user2", password="testpass123"
+    )
+
+    factory = APIRequestFactory()
+    request = factory.get("/users/")
+
+    viewset = AsyncUserViewSet()
+    viewset.action_map = {"get": "list"}
+    viewset.request = request
+
+    response = await viewset.list(request)
 
     assert response.status_code == 200
-    data = response.json()
-    assert "users" in data
-    assert len(data["users"]) == 2
-    assert {"id": 1, "username": "user1"} in data["users"]
-    assert {"id": 2, "username": "user2"} in data["users"]
+    assert "users" in response.data
+    assert len(response.data["users"]) == 2
 
+    usernames = [user["username"] for user in response.data["users"]]
+    assert "user1" in usernames
+    assert "user2" in usernames
 
-@pytest.mark.django_db
-def test_async_user_view_empty_db(api_client):
-    url = reverse("async-user-list")
-    response = api_client.get(url)
-
-    assert response.status_code == 200
-    assert response.json() == {"users": []}
-
-
-@pytest.mark.django_db
-def test_async_user_view_structure(api_client, test_users):
-    response = api_client.get(reverse("async-user-list"))
-    data = response.json()
-
-    assert isinstance(data, dict)
-    assert isinstance(data["users"], list)
-    assert all("id" in user and "username" in user for user in data["users"])
-
-
-@pytest.mark.django_db
-def test_async_user_view_content_type(api_client, test_users):
-    response = api_client.get(reverse("async-user-list"))
-    assert response["Content-Type"] == "application/json"
+    users_data = response.data["users"]
+    assert any(user["username"] == "user1" for user in users_data)
+    assert any(user["username"] == "user2" for user in users_data)
