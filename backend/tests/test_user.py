@@ -1,40 +1,47 @@
 import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory
-from asgiref.sync import sync_to_async
-
-from users.views import AsyncUserViewSet
+from users.views import AsyncUserViewSet  # Замените your_app на имя вашего приложения
 
 User = get_user_model()
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
-async def test_async_user_viewset_list():
-    await sync_to_async(User.objects.create_user)(
-        username="user1", password="testpass123"
+async def test_async_user_viewset():
+    user1 = await User.objects.acreate(
+        username="testuser1", email="user1@example.com", password="testpass123"
     )
-    await sync_to_async(User.objects.create_user)(
-        username="user2", password="testpass123"
-    )
+    # user2 = await User.objects.acreate(
+    #     username="testuser2",
+    #     email="user2@example.com",
+    #     password="testpass123"
+    # )
 
+    view = AsyncUserViewSet.as_view({"get": "list"})
     factory = APIRequestFactory()
     request = factory.get("/users/")
 
-    viewset = AsyncUserViewSet()
-    viewset.action_map = {"get": "list"}
-    viewset.request = request
-
-    response = await viewset.list(request)
+    response = await view(request)
 
     assert response.status_code == 200
-    assert "users" in response.data
-    assert len(response.data["users"]) == 2
+    assert len(response.data) == 2
 
-    usernames = [user["username"] for user in response.data["users"]]
-    assert "user1" in usernames
-    assert "user2" in usernames
+    usernames = {user["username"] for user in response.data}
+    assert "testuser1" in usernames
+    assert "testuser2" in usernames
+    assert all(field in response.data[0] for field in ["id", "username", "email"])
 
-    users_data = response.data["users"]
-    assert any(user["username"] == "user1" for user in users_data)
-    assert any(user["username"] == "user2" for user in users_data)
+    await User.objects.all().adelete()
+
+    empty_request = factory.get("/users/")
+    empty_response = await view(empty_request)
+
+    assert empty_response.status_code == 200
+    assert len(empty_response.data) == 0
+
+    if len(response.data) > 0:
+        first_user = response.data[0]
+        assert isinstance(first_user["id"], int)
+        assert isinstance(first_user["username"], str)
+        assert isinstance(first_user["email"], str)

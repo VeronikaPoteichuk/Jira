@@ -15,9 +15,9 @@ RUN uv pip install --no-cache-dir pip-tools==7.4.1
 
 WORKDIR /app
 
-COPY pyproject.toml ./
+COPY requirements.lock ./
 
-RUN uv pip install --no-cache-dir ".[dev]"
+RUN uv pip install --no-cache-dir -r requirements.lock
 
 EXPOSE 8000
 
@@ -36,8 +36,8 @@ RUN set -e && apt-get update && \
 
 RUN python3 -m venv /opt/venv
 
-COPY pyproject.toml ./
+COPY requirements_test.lock ./
 
-RUN uv pip install --no-cache-dir ".[dev,test]"
+RUN uv pip install --no-cache-dir -r requirements_test.lock
 
 CMD ["sh", "-c", "python manage.py migrate && pytest"]
