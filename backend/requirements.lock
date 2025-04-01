@@ -8,6 +8,8 @@ asgiref==3.8.1
     #   django-cors-headers
 async-property==0.2.2
     # via adrf
+asyncpg==0.30.0
+    # via jira (pyproject.toml)
 attrs==25.3.0
     # via
     #   jsonschema

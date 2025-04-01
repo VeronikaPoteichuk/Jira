@@ -1,7 +1,7 @@
 import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory
-from users.views import AsyncUserViewSet  # Замените your_app на имя вашего приложения
+from users.views import AsyncUserViewSet
 
 User = get_user_model()
 
@@ -12,11 +12,6 @@ async def test_async_user_viewset():
     user1 = await User.objects.acreate(
         username="testuser1", email="user1@example.com", password="testpass123"
     )
-    # user2 = await User.objects.acreate(
-    #     username="testuser2",
-    #     email="user2@example.com",
-    #     password="testpass123"
-    # )
 
     view = AsyncUserViewSet.as_view({"get": "list"})
     factory = APIRequestFactory()

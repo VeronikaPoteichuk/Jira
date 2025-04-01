@@ -3,16 +3,20 @@ services:
     image: postgres:17
     restart: always
     environment:
-      POSTGRES_DB: ${DB_NAME:-docker_db}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: jira
+      POSTGRES_USER: nika
+      POSTGRES_PASSWORD: 1234
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U nika -d jira"]
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - app
 
   backend:
     build:
@@ -27,15 +31,17 @@ services:
       db:
         condition: service_healthy
     environment:
-      DB_NAME: ${DB_NAME:-docker_db}
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-postgres}
-      DB_HOST: ${DB_HOST_DC:-db}
-      DB_PORT: ${DB_PORT:-5432}
-      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
-      DJANGO_DEBUG: ${DJANGO_DEBUG}
+      DB_NAME: jira
+      DB_USER: nika
+      DB_PASSWORD: 1234
+      DB_HOST: training_vika-db-1
+      DB_PORT: 5432
+      DJANGO_SECRET_KEY: 'django-insecure-!wxs1%tcz682o!22sq&4rltb@6uluy5l_qo-1f&n^xp'
+      DJANGO_DEBUG: True
     command: >
-      sh -c "python manage.py migrate && python manage.py runserver"
+      sh -c "python manage.py migrate && uvicorn jira.asgi:application --host 0.0.0.0 --port 8000 --reload"
+    networks:
+      - app
 
   tests:
     build:
@@ -47,16 +53,21 @@ services:
       - backend
       - db
     environment:
-      DB_NAME: ${DB_NAME:-docker_db}
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-postgres}
-      DB_HOST: ${DB_HOST_DC:-db}
-      DB_PORT: ${DB_PORT:-5432}
-      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
-      DJANGO_DEBUG: ${DJANGO_DEBUG}
+      DB_NAME: jira
+      DB_USER: nika
+      DB_PASSWORD: 1234
+      DB_HOST: training_vika-db-1
+      DB_PORT: 5432
+      DJANGO_SECRET_KEY: 'django-insecure-!wxs1%tcz682o!22sq&4rltb@6uluy5l_qo-1f&n^xp'
+      DJANGO_DEBUG: True
     command: >
       sh -c "python manage.py migrate && pytest"
+    networks:
+      - app
 
 
 volumes:
   postgres_data:
+
+networks:
+  app:
