@@ -9,14 +9,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U nika -d jira"]
       interval: 5s
       timeout: 5s
       retries: 5
-    networks:
-      - app
 
   backend:
     build:
@@ -39,9 +37,7 @@ services:
       DJANGO_SECRET_KEY: 'django-insecure-!wxs1%tcz682o!22sq&4rltb@6uluy5l_qo-1f&n^xp'
       DJANGO_DEBUG: 'True'
     command: >
-      sh -c "python manage.py migrate && uvicorn jira.asgi:application --host 0.0.0.0 --port 8000 --reload"
-    networks:
-      - app
+      sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
 
   tests:
     build:
@@ -62,12 +58,7 @@ services:
       DJANGO_DEBUG: 'True'
     command: >
       sh -c "python manage.py migrate && pytest"
-    networks:
-      - app
 
 
 volumes:
   postgres_data:
-
-networks:
-  app:

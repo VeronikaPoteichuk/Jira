@@ -1,5 +1,5 @@
 exclude: "/migrations/"
-default_stages: [commit]
+default_stages: [pre-commit]
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -44,7 +44,6 @@ repos:
     rev: v2.12.1b3
     hooks:
       - id: hadolint
-        args: [--ignore, DL3025, --ignore, DL3018]
 
   - repo: https://github.com/PyCQA/bandit
     rev: 1.8.3
