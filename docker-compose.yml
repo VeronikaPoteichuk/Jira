@@ -34,7 +34,7 @@ services:
       DB_PASSWORD: 1234
       DB_HOST: db
       DB_PORT: 5432
-      DJANGO_SECRET_KEY: 'django-insecure-!wxs1%tcz682o!22sq&4rltb@6uluy5l_qo-1f&n^xp'
+      DJANGO_SECRET_KEY: 'django-insecure-!wxs1%tcz682o$ookv0a!22sq&4rltb@6uluy5l_qo-1f&n^xp'
       DJANGO_DEBUG: 'True'
     command: >
       sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
@@ -54,10 +54,34 @@ services:
       DB_PASSWORD: 1234
       DB_HOST: db
       DB_PORT: 5432
-      DJANGO_SECRET_KEY: 'django-insecure-!wxs1%tcz682o!22sq&4rltb@6uluy5l_qo-1f&n^xp'
+      DJANGO_SECRET_KEY: 'django-insecure-!wxs1%tcz682o$ookv0a!22sq&4rltb@6uluy5l_qo-1f&n^xp'
       DJANGO_DEBUG: 'True'
     command: >
       sh -c "python manage.py migrate && pytest"
+
+  cron:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+      target: cron
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_NAME: jira
+      DB_USER: nika
+      DB_PASSWORD: 1234
+      DB_HOST: db
+      DB_PORT: 5432
+      DJANGO_SECRET_KEY: 'django-insecure-!wxs1%tcz682o$ookv0a!22sq&4rltb@6uluy5l_qo-1f&n^xp'
+      DJANGO_DEBUG: 'True'
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep cron || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 
 volumes:
