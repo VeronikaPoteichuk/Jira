@@ -4,6 +4,8 @@ adrf==0.1.9
     # via jira (pyproject.toml)
 asgiref==3.8.1
     # via
+    #   channels
+    #   daphne
     #   django
     #   django-cors-headers
 async-property==0.2.2
@@ -14,24 +16,44 @@ attrs==25.3.0
     # via
     #   jsonschema
     #   referencing
+    #   service-identity
+    #   twisted
+autobahn==24.4.2
+    # via daphne
+automat==24.8.1
+    # via twisted
 certifi==2025.1.31
     # via requests
+cffi==1.17.1
+    # via cryptography
 cfgv==3.4.0
     # via pre-commit
+channels==4.2.2
+    # via jira (pyproject.toml)
 charset-normalizer==3.4.1
     # via requests
 click==8.1.8
     # via uvicorn
+constantly==23.10.4
+    # via twisted
 coverage==7.8.0
     # via
     #   jira (pyproject.toml)
     #   pytest-cov
+cryptography==44.0.2
+    # via
+    #   autobahn
+    #   pyopenssl
+    #   service-identity
+daphne==4.1.2
+    # via jira (pyproject.toml)
 distlib==0.3.9
     # via virtualenv
 django==5.1.7
     # via
     #   jira (pyproject.toml)
     #   adrf
+    #   channels
     #   django-cors-headers
     #   djangorestframework
     #   drf-spectacular
@@ -53,10 +75,19 @@ filelock==3.18.0
     # via virtualenv
 h11==0.14.0
     # via uvicorn
+hyperlink==21.0.0
+    # via
+    #   autobahn
+    #   twisted
 identify==2.6.9
     # via pre-commit
 idna==3.10
-    # via requests
+    # via
+    #   hyperlink
+    #   requests
+    #   twisted
+incremental==24.7.2
+    # via twisted
 inflection==0.5.1
     # via drf-spectacular
 iniconfig==2.1.0
@@ -77,6 +108,16 @@ pre-commit==4.2.0
     # via jira (pyproject.toml)
 psycopg2-binary==2.9.10
     # via jira (pyproject.toml)
+pyasn1==0.6.1
+    # via
+    #   pyasn1-modules
+    #   service-identity
+pyasn1-modules==0.4.2
+    # via service-identity
+pycparser==2.22
+    # via cffi
+pyopenssl==25.0.0
+    # via twisted
 pytest==8.3.5
     # via
     #   jira (pyproject.toml)
@@ -86,9 +127,9 @@ pytest==8.3.5
     #   pytest-xdist
 pytest-asyncio==0.26.0
     # via jira (pyproject.toml)
-pytest-cov==6.0.0
+pytest-cov==6.1.1
     # via jira (pyproject.toml)
-pytest-django==4.10.0
+pytest-django==4.11.1
     # via jira (pyproject.toml)
 pytest-xdist==3.6.1
     # via jira (pyproject.toml)
@@ -106,12 +147,26 @@ rpds-py==0.24.0
     # via
     #   jsonschema
     #   referencing
+service-identity==24.2.0
+    # via twisted
+setuptools==78.1.0
+    # via
+    #   autobahn
+    #   incremental
+    #   zope-interface
 sqlparse==0.5.3
     # via django
+twisted==24.11.0
+    # via daphne
+txaio==23.1.1
+    # via autobahn
 types-requests==2.32.0.20250328
     # via jira (pyproject.toml)
 typing-extensions==4.13.0
-    # via referencing
+    # via
+    #   pyopenssl
+    #   referencing
+    #   twisted
 uritemplate==4.1.1
     # via drf-spectacular
 urllib3==2.3.0
@@ -122,5 +177,9 @@ uvicorn==0.34.0
     # via jira (pyproject.toml)
 virtualenv==20.29.3
     # via pre-commit
+websockets==15.0.1
+    # via jira (pyproject.toml)
 whitenoise==6.9.0
     # via jira (pyproject.toml)
+zope-interface==7.2
+    # via twisted

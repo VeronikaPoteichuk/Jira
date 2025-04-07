@@ -2,11 +2,11 @@ from django.conf import settings
 
 
 class TestSettings:
-    # def test_security_settings(self):
-    #     assert hasattr(settings, "SECRET_KEY")
+    def test_security_settings(self):
+        assert hasattr(settings, "SECRET_KEY")
 
-    #     assert isinstance(settings.SECRET_KEY, str)
-    #     assert len(settings.SECRET_KEY) >= 50
+        assert isinstance(settings.SECRET_KEY, str)
+        assert len(settings.SECRET_KEY) >= 50
 
     def test_debug_mode(self):
         assert isinstance(settings.DEBUG, bool)

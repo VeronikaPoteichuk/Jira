@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "drf_spectacular_sidecar",
     "adrf",
     "users",
+    "channels",
 ]
 
 MIDDLEWARE = [
@@ -92,6 +93,7 @@ DATABASES = {
     }
 }
 
+CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 
 # Swagger
 
@@ -131,6 +133,20 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+LOGGING_CONFIG = "logging.config.dictConfig"
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "WARNING",
+    },
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
@@ -159,3 +175,5 @@ CSRF_TRUSTED_ORIGINS = ["http://localhost:8080"]
 STATIC_ROOT = "static/"
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+CORS_ALLOWED_ORIGINS = ["*"]
