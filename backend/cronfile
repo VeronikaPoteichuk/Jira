@@ -1,4 +1,0 @@
-*/1 * * * * /opt/venv/bin/python /app/async_cron_task.py >> /var/log/cron.log 2>&1
-*/2 * * * * /opt/venv/bin/python /app/sync_cron_task.py >> /var/log/cron.log 2>&1
-*/1 * * * * /opt/venv/bin/python /app/sync_cron_task.py >> /proc/1/fd/1 2>&1
-*/1 * * * * /opt/venv/bin/python /app/async_cron_task.py >> /proc/1/fd/1 2>&1

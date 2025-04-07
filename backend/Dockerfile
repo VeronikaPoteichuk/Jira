@@ -40,21 +40,19 @@ COPY . .
 
 CMD ["sh", "-c", "python manage.py migrate && pytest"]
 
-FROM base as cron
+FROM base AS cron
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends cron=3.0pl1-162 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-COPY cronfile /etc/cron.d/mycron
+COPY . .
+COPY cron/cronfile /etc/cron.d/cronfile
+COPY cron/entrypoint.sh /entrypoint.sh
 
-COPY async_cron_task.py /app/async_cron_task.py
-COPY sync_cron_task.py /app/sync_cron_task.py
-
-RUN chmod 0644 /etc/cron.d/mycron && \
-    crontab /etc/cron.d/mycron && \
+RUN chmod +x /entrypoint.sh && chmod 0644 /etc/cron.d/cronfile && \
     touch /var/log/cron.log && \
-    echo 'cron.* /var/log/cron.log' >> /etc/rsyslog.conf
+    crontab /etc/cron.d/cronfile
 
-CMD ["cron", "-f"]
+ENTRYPOINT ["/entrypoint.sh"]
