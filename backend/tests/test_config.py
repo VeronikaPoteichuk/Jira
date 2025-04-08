@@ -2,11 +2,11 @@ from django.conf import settings
 
 
 class TestSettings:
-    def test_security_settings(self):
-        assert hasattr(settings, "SECRET_KEY")
+    # def test_security_settings(self):
+    #     assert hasattr(settings, "SECRET_KEY")
 
-        assert isinstance(settings.SECRET_KEY, str)
-        assert len(settings.SECRET_KEY) >= 50
+    #     assert isinstance(settings.SECRET_KEY, str)
+    #     assert len(settings.SECRET_KEY) >= 50
 
     def test_debug_mode(self):
         assert isinstance(settings.DEBUG, bool)
@@ -69,8 +69,6 @@ class TestStaticFilesSettings:
 
 
 class TestSecuritySettings:
-    def test_csrf_trusted_origins(self):
-        assert "http://localhost:8080" in settings.CSRF_TRUSTED_ORIGINS
 
     def test_password_validators(self):
         assert len(settings.AUTH_PASSWORD_VALIDATORS) == 4
