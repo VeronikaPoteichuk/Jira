@@ -1,0 +1,30 @@
+[project]
+name = "jira"
+version = "0.1.0"
+readme = "README.md"
+authors = [{ name = "Veranika Patseichuk", email = "VeranikaPatseichuk@ventionteams.com" }]
+dependencies = [
+    "Django>=5.1.7",
+    "uvicorn>=0.34.0",
+    "psycopg2-binary>=2.9.10",
+    "djangorestframework>=3.15.2",
+    "whitenoise>=6.9.0",
+    "django-cors-headers>=4.3.1",
+    "drf-spectacular>=0.28.0",
+    "drf-spectacular-sidecar>=2025.3.1",
+    "adrf>=0.1.9",
+    "requests>=2.32.3",
+    "types-requests>=2.32.0.20250306",
+    "pre-commit>=4.2.0",
+    "asyncpg>=0.30.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "coverage[toml]>=7.7.1",
+    "pytest>=8.3.4",
+    "pytest-xdist>=3.6",
+    "pytest-django>=4.10.0",
+    "pytest-cov>=6.0.0",
+    "pytest-asyncio>=0.26.0"
+]

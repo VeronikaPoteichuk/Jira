@@ -1,0 +1,64 @@
+services:
+  db:
+    image: postgres:17
+    restart: always
+    environment:
+      POSTGRES_DB: jira
+      POSTGRES_USER: nika
+      POSTGRES_PASSWORD: 1234
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nika -d jira"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+      target: base
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8001:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_NAME: jira
+      DB_USER: nika
+      DB_PASSWORD: 1234
+      DB_HOST: db
+      DB_PORT: 5432
+      DJANGO_SECRET_KEY: 'django-insecure-!wxs1%tcz682o!22sq&4rltb@6uluy5l_qo-1f&n^xp'
+      DJANGO_DEBUG: 'True'
+    command: >
+      sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+
+  tests:
+    build:
+      context: backend
+      target: tests
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - backend
+      - db
+    environment:
+      DB_NAME: jira
+      DB_USER: nika
+      DB_PASSWORD: 1234
+      DB_HOST: db
+      DB_PORT: 5432
+      DJANGO_SECRET_KEY: 'django-insecure-!wxs1%tcz682o!22sq&4rltb@6uluy5l_qo-1f&n^xp'
+      DJANGO_DEBUG: 'True'
+    command: >
+      sh -c "python manage.py migrate && pytest"
+
+
+volumes:
+  postgres_data:
