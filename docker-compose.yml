@@ -100,6 +100,8 @@ services:
       - backend
     stdin_open: true
     tty: true
+    networks:
+      - default
 
   nginx:
     image: nginx:latest

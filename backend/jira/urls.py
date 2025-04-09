@@ -29,6 +29,7 @@ from rest_framework.routers import DefaultRouter
 
 
 router = DefaultRouter()
+router.include_root_view = False
 router.register(r"users", AsyncUserViewSet, basename="user")
 
 urlpatterns = [
@@ -39,8 +40,6 @@ urlpatterns = [
         "swagger/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"
     ),
     path("redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
-    # path("test_user/", AsyncUserView.as_view(), name="async-user-list"),
-    # path("users/", UserView.as_view({'users', 'set'}), name="async-user-list"),
 ]
 
 

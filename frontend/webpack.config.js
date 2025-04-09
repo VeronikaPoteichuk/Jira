@@ -29,8 +29,8 @@ module.exports = {
     historyApiFallback: true,
     proxy: [
       {
-        context: ['/api', '/ws'],
-        target: 'http://localhost:8001',
+        context: ['/users'],
+        target: 'http://backend:8000',
         secure: false,
         ws: true,
       },
