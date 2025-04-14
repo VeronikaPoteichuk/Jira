@@ -26,7 +26,7 @@ services:
     volumes:
       - ./backend:/app
     ports:
-      - "8001:8000"
+      - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -102,6 +102,8 @@ services:
     tty: true
     networks:
       - default
+    command: npm start
+
 
   nginx:
     image: nginx:latest

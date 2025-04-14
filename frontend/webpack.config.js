@@ -6,7 +6,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
-    clean: true
+    clean: true,
   },
   mode: 'development',
   module: {
@@ -20,8 +20,8 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'public/index.html'
-    })
+      template: 'public/index.html',
+    }),
   ],
   devServer: {
     static: './dist',
@@ -31,8 +31,7 @@ module.exports = {
       {
         context: ['/users'],
         target: 'http://backend:8000',
-        secure: false,
-        ws: true,
+        changeOrigin: true,
       },
     ],
   },
