@@ -70,7 +70,7 @@ async function runReview() {
 
   for (const file of files) {
     const content = await getFileContent(file);
-    prompt += `\n\nFile: ${file}\n\`\`\`\n${content.slice(0, 3000)}\n\`\`\``;
+    prompt += `\n\nFile: ${file}\n\`\`\`\n${content.slice(0, 100000)}\n\`\`\``;
   }
 
   const review = await callGemini(prompt);
