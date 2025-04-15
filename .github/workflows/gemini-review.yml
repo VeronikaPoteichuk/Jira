@@ -19,6 +19,9 @@ jobs:
       - name: Install Gemini SDK
         run: npm install --save @google/generative-ai @octokit/rest
 
+      - name: Install Node Fetch
+        run: npm install node-fetch
+
       - name: Run Gemini Review Script
         run: node .github/scripts/review-with-gemini.mjs
         env:
