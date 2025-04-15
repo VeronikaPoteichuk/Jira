@@ -56,7 +56,7 @@ async function runReview() {
     return;
   }
 
-  let prompt = 'Act as a strict and concise senior code reviewer. Point out only important issues in the following files:\n';
+  let prompt = 'Act as a concise senior code reviewer. Don\'t nitpick. Write in bulletspoints. Point out only relevant and important issues in the following files:\n';
 
   for (const file of files) {
     const content = await getFileContent(file);
