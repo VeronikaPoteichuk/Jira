@@ -20,7 +20,7 @@ jobs:
         run: npm install --save @google/generative-ai @octokit/rest
 
       - name: Run Gemini Review Script
-        run: node .github/scripts/review-with-gemini.js
+        run: node .github/scripts/review-with-gemini.mjs
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
