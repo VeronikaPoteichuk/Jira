@@ -6,10 +6,10 @@ from prompts import GENERAL_PROMPT, ISSUES_PROMPT
 
 class GeminiLLM(LLMInterface):
     def __init__(self, debug: bool = False):
-        api_key = os.getenv("GOOGLE_API_KEY")
+        api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
             raise ValueError(
-                "GOOGLE_API_KEY environment variable is required for Gemini"
+                "GEMINI_API_KEY environment variable is required for Gemini"
             )
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel(
