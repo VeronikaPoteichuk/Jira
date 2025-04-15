@@ -1,54 +1,74 @@
-import { execSync } from "child_process";
-import { Octokit } from "@octokit/rest";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import * as fs from "fs/promises";
-import fetch from "node-fetch";
+import { execSync } from 'child_process';
+import fetch from 'node-fetch';
 
-const apiKey = process.env.GEMINI_API_KEY;
-const githubToken = process.env.GITHUB_TOKEN;
-const prNumber = process.env.PR_NUMBER;
-const repo = process.env.GITHUB_REPOSITORY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const REPO = process.env.GITHUB_REPOSITORY;
+const PR_NUMBER = process.env.GITHUB_REF?.split('/').pop();
 
-if (!prNumber || !repo) {
-  console.error("Missing PR_NUMBER or GITHUB_REPOSITORY env vars");
-  process.exit(1);
+function run(command) {
+  return execSync(command).toString().trim();
 }
 
-const [owner, repoName] = repo.split("/");
+function getChangedFiles() {
+  try {
+    const diffOutput = run('git diff --name-only origin/main...HEAD');
+    return diffOutput.split('\n').filter(Boolean);
+  } catch (err) {
+    console.error('❌ Error running git diff:', err.message);
+    throw err;
+  }
+}
 
-const genAI = new GoogleGenerativeAI(apiKey);
-const octokit = new Octokit({ auth: githubToken });
+async function getFileContent(filePath) {
+  return run(`cat ${filePath}`);
+}
 
-async function runReview() {
-  // Get the diff for the PR
-  const diff = execSync('git diff origin/main...HEAD').toString();
-
-  const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
-
-  const prompt = `
-You are a technical code reviewer. Be concise and to the point.
-Comment only on meaningful issues: architecture, performance, readability, bugs, or style violations.
-
-Here is a Git diff from a GitHub Pull Request:
-${diff}
-`;
-
-  console.log("Generating review...");
-  const result = await model.generateContent(prompt);
-  const reviewText = result.response.text();
-
-  // Post as PR comment
-  await octokit.issues.createComment({
-    owner,
-    repo: repoName,
-    issue_number: parseInt(prNumber),
-    body: `🤖 **Gemini Review**\n\n${reviewText}`
+async function callGemini(prompt) {
+  const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + GEMINI_API_KEY, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }]
+    })
   });
 
-  console.log("✅ Review comment posted to PR!");
+  const data = await res.json();
+  return data?.candidates?.[0]?.content?.parts?.[0]?.text || '(no response)';
+}
+
+async function commentOnPR(body) {
+  const url = `https://api.github.com/repos/${REPO}/issues/${PR_NUMBER}/comments`;
+  await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${GITHUB_TOKEN}`,
+      'Accept': 'application/vnd.github+json'
+    },
+    body: JSON.stringify({ body })
+  });
+}
+
+async function runReview() {
+  const files = getChangedFiles();
+  if (!files.length) {
+    console.log('✅ No changed files');
+    return;
+  }
+
+  let prompt = 'Act as a strict and concise senior code reviewer. Point out only important issues in the following files:\n';
+
+  for (const file of files) {
+    const content = await getFileContent(file);
+    prompt += `\n\nFile: ${file}\n\`\`\`\n${content.slice(0, 3000)}\n\`\`\``;
+  }
+
+  const review = await callGemini(prompt);
+  console.log('📄 Gemini Review:\n', review);
+  await commentOnPR('💡 **Gemini Review**:\n\n' + review);
 }
 
 runReview().catch(err => {
-  console.error("❌ Error running review:", err);
+  console.error('❌ Error running review:', err);
   process.exit(1);
 });
