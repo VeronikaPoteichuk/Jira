@@ -18,6 +18,7 @@ const genAI = new GoogleGenerativeAI(apiKey);
 const octokit = new Octokit({ auth: githubToken });
 
 async function runReview() {
+  // Get the diff for the PR
   const diff = execSync('git diff origin/main...HEAD').toString();
 
   const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
