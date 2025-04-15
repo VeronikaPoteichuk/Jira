@@ -1,6 +1,6 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { execSync } = require('child_process');
-const { Octokit } = require("@octokit/rest");
+import { Octokit } from "@octokit/rest";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import * as fs from "fs/promises";
 
 const apiKey = process.env.GEMINI_API_KEY;
 const githubToken = process.env.GITHUB_TOKEN;
