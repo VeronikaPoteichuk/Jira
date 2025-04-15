@@ -1,6 +1,8 @@
+import { execSync } from "child_process";
 import { Octokit } from "@octokit/rest";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as fs from "fs/promises";
+import fetch from "node-fetch";
 
 const apiKey = process.env.GEMINI_API_KEY;
 const githubToken = process.env.GITHUB_TOKEN;
