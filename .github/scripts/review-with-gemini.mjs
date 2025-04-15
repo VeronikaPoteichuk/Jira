@@ -65,12 +65,6 @@ async function runReview() {
     - Write only the important.
     - If you are not sure about something, state it explicitly (Confidence: Low).
 
-    Format:
-    🔍 Issue
-    💡 Suggestion
-    📚 Reference (if any)
-    🧠 Confidence: High/Low
-
     Start analysis:
   `;
 
