@@ -1,27 +1,28 @@
-name: AI Code Review
+name: Gemini PR Reviewer
 
 on:
   pull_request:
-    types: [opened, edited, synchronize]
+    types: [opened, synchronize]
 
 jobs:
-  ai_review:
+  gemini-review:
     runs-on: ubuntu-latest
-    name: AI PR Review
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Run CodeRabbit AI Reviewer
-        uses: coderabbitai/openai-pr-reviewer@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          openai_light_model: gpt-3.5-turbo
-          openai_heavy_model: gpt-3.5-turbo
-          review_comment_lgtm: false
-          review_simple_changes: true
-          summarize: true
-          system_message: >
-            You are a technical code reviewer. Write briefly, clearly and strictly to the point. Make comments only on significant issues (code style, errors, architecture).
+          node-version: '18'
+
+      - name: Install Gemini SDK
+        run: npm install --save @google/generative-ai @octokit/rest
+
+      - name: Run Gemini Review Script
+        run: node .github/scripts/review-with-gemini.js
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
