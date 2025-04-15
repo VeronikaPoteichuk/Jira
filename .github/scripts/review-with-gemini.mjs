@@ -2,7 +2,7 @@ import { execSync } from 'child_process';
 import fetch from 'node-fetch';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const TOKEN_GITHUB = process.env.TOKEN_GITHUB;
 const REPO = process.env.GITHUB_REPOSITORY;
 const PR_NUMBER = process.env.GITHUB_REF?.split('/').pop();
 
@@ -42,7 +42,7 @@ async function commentOnPR(body) {
   await fetch(url, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${GITHUB_TOKEN}`,
+      Authorization: `Bearer ${TOKEN_GITHUB}`,
       'Accept': 'application/vnd.github+json'
     },
     body: JSON.stringify({ body })
