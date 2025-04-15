@@ -23,9 +23,6 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install Gemini SDK
-        run: npm install --save @google/generative-ai @octokit/rest
-
       - name: Install Node Fetch
         run: npm install node-fetch
 
