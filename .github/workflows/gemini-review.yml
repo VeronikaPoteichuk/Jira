@@ -1,72 +1,35 @@
-# name: Gemini PR Reviewer
-
-# on:
-#   pull_request:
-#     types: [opened, synchronize]
-
-# permissions:
-#   pull-requests: write
-#   contents: read
-
-# jobs:
-#   gemini-review:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v3
-#         with:
-#             fetch-depth: 0
-
-
-#       - name: Set up Node.js
-#         uses: actions/setup-node@v3
-#         with:
-#           node-version: '18'
-
-#       - name: Install Node Fetch
-#         run: npm install node-fetch
-
-#       - name: Run Gemini Review Script
-#         run: node .github/scripts/review-with-gemini.mjs
-#         env:
-#           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-#           TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
-#           GITHUB_REPOSITORY: ${{ github.repository }}
-#           PR_NUMBER: ${{ github.event.pull_request.number }}
-
-name: AI Code Review
+name: Gemini PR Reviewer
 
 on:
   pull_request:
     types: [opened, synchronize]
 
+permissions:
+  pull-requests: write
+  contents: read
+
 jobs:
-  review:
+  gemini-review:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Checkout Code Reviewer Repository
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
         with:
-          repository: VeronikaPoteichuk/Jira
-          path: Jira
+            fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          python-version: '3.10'
+          node-version: '18'
 
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r Jira/requirements.txt
+      - name: Install Node Fetch
+        run: npm install node-fetch
 
-      - name: Run AI Code Review
+      - name: Run Gemini Review Script
+        run: node .github/scripts/review-with-gemini.mjs
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
-          OPENAI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: |
-          cd Jira
-          python review.py ${{ github.repository }} ${{ github.event.pull_request.number }} --mode comments --llm gemini
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
