@@ -1,27 +1,43 @@
-name: AI Code Review
+name: PR Code Review
 
 on:
   pull_request:
-    types: [opened, edited, synchronize]
+    types: [opened, synchronize, reopened]
 
 jobs:
-  ai_review:
+  review:
     runs-on: ubuntu-latest
-    name: AI PR Review
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Run CodeRabbit AI Reviewer
+      - name: Run CodeRabbit Review with fallback
+        id: codereview
+        continue-on-error: true
         uses: coderabbitai/openai-pr-reviewer@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          openai_base_url: https://api.openai.com/v1
           openai_light_model: gpt-4o
           openai_heavy_model: gpt-4o
-          review_comment_lgtm: false
-          review_simple_changes: true
-          summarize: true
-          system_message: >
+          openai_model_temperature: 0.05
+          system_message: |
             You are a technical code reviewer. Write briefly, clearly and strictly to the point. Make comments only on significant issues (code style, errors, architecture).
+          language: en-US
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Fallback to GPT-3.5 if GPT-4o fails
+        if: failure()
+        uses: coderabbitai/openai-pr-reviewer@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          openai_base_url: https://api.openai.com/v1
+          openai_light_model: gpt-3.5-turbo
+          openai_heavy_model: gpt-3.5-turbo
+          openai_model_temperature: 0.05
+          system_message: |
+            You are a technical code reviewer. Write briefly, clearly and strictly to the point. Make comments only on significant issues (code style, errors, architecture).
+          language: en-US
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
