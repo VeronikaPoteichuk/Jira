@@ -1,33 +1,53 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import axios from "axios";
+import { Button, Modal, ModalHeader, ModalBody } from "reactstrap";
+import CreateUser from "../create_user/createUser";
 
-const App = () => {
-  const [users, setUsers] = useState([]);
-  const [message, setMessage] = useState("Load...");
+class ListUsers extends React.Component {
+  state = {
+    users: [],
+    modal: false,
+  };
 
-  useEffect(() => {
-    axios.get("/users/")
-      .then((response) => {
-        setUsers(response.data);
-        setMessage("Data loaded.");
-      })
-      .catch((error) => {
-        console.error("Error while receiving data:", error);
-        setMessage("Error loading data.");
-      });
-  }, []);
+  componentDidMount() {
+    this.getUsers();
+  }
 
-  return (
-    <div>
-      <h1>Users list</h1>
-      <p>{message}</p>
-        {users.map(user => (
-          <a key={user.id}>
-            {user.id}.<strong> {user.username}</strong> — {user.email || "not email"}
-          </a>
-        ))}
-    </div>
-  );
-};
+  getUsers = () => {
+    axios.get("/users/").then((res) => this.setState({ users: res.data }));
+  };
 
-export default App;
+  toggleModal = () => {
+    this.setState((prevState) => ({
+      modal: !prevState.modal,
+    }));
+  };
+
+  render() {
+    return (
+      <div className="container mt-4">
+        <h3>Users list</h3>
+        <ul>
+          {this.state.users.map((user, index) => (
+            <li key={user.id}>
+              <strong>{index + 1}. {user.username}</strong> — {user.email}
+            </li>
+          ))}
+        </ul>
+
+        <Button color="primary" onClick={this.toggleModal}>
+          Add User
+        </Button>
+
+        <Modal isOpen={this.state.modal} toggle={this.toggleModal}>
+          <ModalHeader toggle={this.toggleModal}>Create New User</ModalHeader>
+          <ModalBody>
+            <CreateUser resetState={this.getUsers} toggle={this.toggleModal} />
+          </ModalBody>
+        </Modal>
+      </div>
+    );
+  }
+}
+
+export default ListUsers;
