@@ -4,7 +4,7 @@ import fetch from 'node-fetch';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const TOKEN_GITHUB = process.env.TOKEN_GITHUB;
 const REPO = process.env.GITHUB_REPOSITORY;
-const PR_NUMBER = process.env.GITHUB_REF?.split('/').pop();
+const PR_NUMBER = process.env.PR_NUMBER;
 
 function run(command) {
   return execSync(command).toString().trim();
