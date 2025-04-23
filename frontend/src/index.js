@@ -1,6 +1,6 @@
 import React, { Fragment } from "react";
 import ReactDOM from "react-dom/client";
-import ListUsers from "./list_users/listUsers";
+import ListUsers from "./list_users/ListUsers";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 

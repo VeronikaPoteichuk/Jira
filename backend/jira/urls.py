@@ -26,6 +26,13 @@ from drf_spectacular.views import (
 )
 from users.views import AsyncUserViewSet
 from rest_framework.routers import DefaultRouter
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.http import JsonResponse
+
+
+@ensure_csrf_cookie
+def csrf(request):
+    return JsonResponse({"message": "CSRF cookie set"})
 
 
 router = DefaultRouter()
@@ -40,6 +47,7 @@ urlpatterns = [
         "swagger/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"
     ),
     path("redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+    path("csrf/", csrf),
 ]
 
 
