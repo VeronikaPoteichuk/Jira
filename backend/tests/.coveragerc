@@ -1,0 +1,33 @@
+[run]
+source =
+    users
+
+omit =
+    */migrations/*
+    */tests/*
+    */__init__.py
+    manage.py
+    */admin.py
+    */apps.py
+
+branch = True
+
+[report]
+show_missing = True
+
+exclude_lines =
+    pragma: no cover
+    def __str__
+    def __repr__
+    if self\.debug
+    if settings\.DEBUG
+    raise NotImplementedError
+    if __name__ == .__main__.:
+
+[html]
+directory = coverage_html_report
+
+[paths]
+source =
+    .
+    */site-packages
