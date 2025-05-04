@@ -81,7 +81,6 @@ async function runReview() {
     - Don't write the obvious.
     - Write only the important.
     - If you are not sure about something, state it explicitly (Confidence: Low).
-
     Start analysis:
   `;
 
