@@ -12,7 +12,7 @@ function run(command) {
 
 function getChangedFiles() {
   try {
-    const diffOutput = run('git diff --name-only origin/main...HEAD');
+    const diffOutput = run('git diff --name-only --diff-filter=ACMRT origin/main...HEAD');
     return diffOutput.split('\n').filter(Boolean);
   } catch (err) {
     console.error('❌ Error running git diff:', err.message);
@@ -21,7 +21,12 @@ function getChangedFiles() {
 }
 
 async function getFileContent(filePath) {
-  return run(`cat ${filePath}`);
+  try {
+    return fs.readFileSync(filePath, 'utf-8');
+  } catch (err) {
+    console.warn(`⚠️ Cannot read file: ${filePath}`);
+    return `// ERROR: Cannot read file: ${filePath}`;
+  }
 }
 
 async function callGemini(prompt) {
