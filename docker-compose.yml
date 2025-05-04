@@ -60,7 +60,7 @@ services:
       DJANGO_SECRET_KEY: 'django-insecure-!wxs1%tcz682o!22sq&4rltb@6uluy5l_qo-1f&n^xp'
       DJANGO_DEBUG: 'True'
     command: >
-      sh -c "python manage.py migrate && pytest"
+      sh -c "python manage.py migrate && pytest --cov --cov-report=term-missing --cov-config=.coveragerc"
 
   cron:
     build:

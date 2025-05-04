@@ -30,15 +30,6 @@ class AsyncUserViewSet(ModelViewSet):
 
     async def update(self, request, *args, **kwargs):
         instance = await sync_to_async(self.get_object, thread_sensitive=True)()
-        serializer = self.get_serializer(instance, data=request.data, partial=False)
-        await sync_to_async(serializer.is_valid, thread_sensitive=True)(
-            raise_exception=True
-        )
-        updated_user = await sync_to_async(serializer.save, thread_sensitive=True)()
-        return Response(UserUpdateSerializer(updated_user).data)
-
-    async def partial_update(self, request, *args, **kwargs):
-        instance = await sync_to_async(self.get_object, thread_sensitive=True)()
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         await sync_to_async(serializer.is_valid, thread_sensitive=True)(
             raise_exception=True

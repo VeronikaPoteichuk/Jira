@@ -17,7 +17,7 @@ const ListUsers = () => {
   };
 
   useEffect(() => {
-    axios.get("/csrf/"); // вызовет view, выставляющий csrf куку
+    axios.get("/csrf/");
 
     fetchUsers();
   }, []);
