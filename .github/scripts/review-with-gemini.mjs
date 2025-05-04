@@ -73,17 +73,16 @@ async function runReview() {
     return;
   }
 
-  let prompt = `You are an experienced code reviewer, AI level Copilot X. Review the following files.
-    Your task:
-    - Check logic, style, architecture.
-    - Compare with official documentation and articles from MDN, Google, Microsoft.
-    - Give specific and brief comments.
-    - Don't write the obvious.
-    - Write only the important.
-    - If you are not sure about something, state it explicitly (Confidence: Low).
-    Start analysis:
-  `;
-
+  let prompt = `You are an experienced code reviewer, AI Copilot X level. Review the following files.
+Your task:
+- Check logic, style, architecture.
+- Compare with official documentation and MDN, Google, Microsoft articles.
+- Give specific and brief comments on what should be fixed and what to pay attention to.
+- Do not write the obvious.
+- Write only the important.
+- If you are not sure about something, state it explicitly (Confidence: Low/Medium/High).
+Start analysis:
+`;
   for (const file of files) {
     const content = await getFileContent(file);
     prompt += `\n\nFile: ${file}\n\`\`\`\n${content.slice(0, 100000)}\n\`\`\``;
