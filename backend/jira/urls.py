@@ -29,6 +29,8 @@ from rest_framework.routers import DefaultRouter
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import JsonResponse
 
+# from rest_framework.authtoken.views import obtain_auth_token
+
 
 @ensure_csrf_cookie
 def csrf(request):
@@ -48,6 +50,7 @@ urlpatterns = [
     ),
     path("redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
     path("csrf/", csrf),
+    # path('api/token/', AsyncLoginView.as_view(), name='token_obtain_pair'),
 ]
 
 
