@@ -9,6 +9,7 @@ User = get_user_model()
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
 class TestAsyncUserViewSet:
+
     async def create_user(self, **kwargs):
         return await User.objects.acreate(**kwargs)
 
@@ -16,6 +17,7 @@ class TestAsyncUserViewSet:
         self.factory = APIRequestFactory()
 
     async def test_list_users(self):
+
         await self.create_user(
             username="user1", email="user1@example.com", password="pass"
         )
