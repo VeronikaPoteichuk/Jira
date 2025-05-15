@@ -1,24 +1,25 @@
 import React, { useState } from "react";
+import "./style.css";
 
 export default function App() {
   const [isLogin, setIsLogin] = useState(true);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-400 to-indigo-600 px-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-xl overflow-hidden">
+    <div className="container">
+      <div className="  ">
         {/* Tab headers */}
         <div className="relative flex">
           <button
             onClick={() => setIsLogin(true)}
-            className={`w-1/2 py-4 text-center font-semibold transition-colors ${
-              isLogin ? "text-indigo-600" : "text-gray-500"
+            className={`custom-button ${
+              isLogin ? "text-indigo-60" : "text-gray-500"
             }`}
           >
             Sign In
           </button>
           <button
             onClick={() => setIsLogin(false)}
-            className={`w-1/2 py-4 text-center font-semibold transition-colors ${
+            className={`custom-button ${
               !isLogin ? "text-indigo-600" : "text-gray-500"
             }`}
           >
@@ -34,7 +35,7 @@ export default function App() {
 
         {/* Form content */}
         <div className="p-8">
-          <h2 className="text-2xl font-bold text-center mb-6">
+          <h2 className="title text-2xl font-bold text-center mb-6">
             {isLogin ? "Welcome Back" : "Create Account"}
           </h2>
           <form className="space-y-4">
