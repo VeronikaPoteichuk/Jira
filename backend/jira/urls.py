@@ -28,8 +28,8 @@ from users.views import AsyncUserViewSet
 from rest_framework.routers import DefaultRouter
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import JsonResponse
-
-# from rest_framework.authtoken.views import obtain_auth_token
+from rest_framework_simplejwt.views import TokenRefreshView
+from users.views_auth import LoginView, LogoutView, GoogleAuthView
 
 
 @ensure_csrf_cookie
@@ -50,7 +50,10 @@ urlpatterns = [
     ),
     path("redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
     path("csrf/", csrf),
-    # path('api/token/', AsyncLoginView.as_view(), name='token_obtain_pair'),
+    path("api/auth/login/", LoginView.as_view(), name="token_obtain_pair"),
+    path("api/auth/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("api/auth/logout/", LogoutView.as_view(), name="token_logout"),
+    path("api/auth/google/", GoogleAuthView.as_view(), name="google_login"),
 ]
 
 

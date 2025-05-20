@@ -1,11 +1,13 @@
 import React, { useRef, useState } from 'react';
 import axios from '../api/axios';
 import './style.css';
+import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 
-const AuthForm = () => {
+const AuthFormContent = () => {
   const sliderRef = useRef(null);
   const formSectionRef = useRef(null);
 
+  const [loginData, setLoginData] = useState({ username: '', password: '' });
   const [signupData, setSignupData] = useState({
     username: '',
     email: '',
@@ -23,6 +25,10 @@ const AuthForm = () => {
   const handleLoginClick = () => {
     sliderRef.current.classList.remove("moveslider");
     formSectionRef.current.classList.remove("form-section-move");
+  };
+
+  const handleLoginChange = (e) => {
+    setLoginData({ ...loginData, [e.target.name]: e.target.value });
   };
 
   const handleSignupChange = (e) => {
@@ -43,11 +49,70 @@ const AuthForm = () => {
       });
       setSignupError(null);
       alert("User created!");
+      handleLoginClick();
     } catch (error) {
       console.error(error);
       setSignupError("Registration failed");
+      alert("Registration failed");
     }
   };
+
+  const handleLoginSubmit = async () => {
+    try {
+      const res = await axios.post("/api/auth/login/", {
+        username: loginData.username,
+        password: loginData.password
+      });
+      localStorage.setItem("access", res.data.access);
+      localStorage.setItem("refresh", res.data.refresh);
+      alert("Login successful!");
+      window.location.href = "/dashboard";
+    } catch (error) {
+      console.error(error);
+      alert("Login failed");
+    }
+  };
+
+  // const handleGoogleLoginSuccess = async (tokenResponse) => {
+  //   try {
+  //     const res = await axios.post("/api/auth/google/", {
+  //       credential: tokenResponse.credential,
+  //     });
+
+  //     const { access, refresh } = res.data;
+  //     localStorage.setItem("access", access);
+  //     localStorage.setItem("refresh", refresh);
+  //     alert("Google login successful!");
+  //     window.location.href = "/dashboard";
+  //   } catch (err) {
+  //     console.error("Google login failed", err);
+  //     alert("Google login failed");
+  //   }
+  // };
+
+  const loginWithGoogle = useGoogleLogin({
+    flow: 'implicit',
+    onSuccess: async (tokenResponse) => {
+      console.log("Google login success:", tokenResponse);
+      const res = await fetch('http://localhost:8000/api/auth/google/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          access_token: tokenResponse.access_token
+        }),
+      });
+
+      if (!res.ok) {
+        console.error('Error logging into server:', await res.text());
+      } else {
+        const data = await res.json();
+        localStorage.setItem("access", data.access);
+        localStorage.setItem("refresh", data.refresh);
+        window.location.href = "/dashboard";
+      }
+    },
+    onError: () => console.error("Google login error"),
+  });
 
   return (
     <div>
@@ -58,15 +123,47 @@ const AuthForm = () => {
       <div className="container">
         <div className="slider" ref={sliderRef}></div>
         <div className="btn">
-          <button className="login" onClick={handleLoginClick}>Login</button>
-          <button className="signup" onClick={handleSignupClick}>Signup</button>
+          <button className="login" onClick={handleLoginClick}>Sign in</button>
+          <button className="signup" onClick={handleSignupClick}>Sign up</button>
         </div>
 
         <div className="form-section" ref={formSectionRef}>
           <div className="login-box">
-            <input type="email" className="email ele" placeholder="youremail@email.com" />
-            <input type="password" className="password ele" placeholder="password" />
-            <button className="clkbtn">Login</button>
+            <input
+              type="username"
+              name="username"
+              className="username elein"
+              placeholder="Enter your username"
+              value={loginData.username}
+              onChange={handleLoginChange}
+              required
+            />
+            <input
+              type="password"
+              name="password"
+              className="password elein"
+              placeholder="password"
+              value={loginData.password}
+              onChange={handleLoginChange}
+              required
+            />
+            <button className="clkbtn" onClick={handleLoginSubmit}>Sign in</button>
+
+            <div className='login-with'>
+            <p style={{ marginBottom: '20px', }}> OR </p>
+
+              <button
+                onClick={() => loginWithGoogle()}
+                style={{
+                  width: '60px',
+                  height: '60px',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQcbdcygTuiOxXn4wxD2L82CI-VDHzX4edm1w&s" alt="Google" style={{ width: '60px', height: '60px' }} />
+              </button>
+            </div>
           </div>
 
           <form className="signup-box" onSubmit={handleSignupSubmit}>
@@ -107,12 +204,18 @@ const AuthForm = () => {
               required
             />
             {signupError && <p style={{ color: 'red' }}>{signupError}</p>}
-            <button type="submit" className="clkbtn">Signup</button>
+            <button type="submit" className="clkbtn">Sign up</button>
           </form>
         </div>
       </div>
     </div>
   );
 };
+
+const AuthForm = () => (
+  <GoogleOAuthProvider clientId="1078199504624-vq0dqgmkqmsvt2ivpnp7mbcrcko0gfqa.apps.googleusercontent.com">
+    <AuthFormContent />
+  </GoogleOAuthProvider>
+);
 
 export default AuthForm;
