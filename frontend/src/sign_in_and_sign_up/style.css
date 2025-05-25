@@ -8,7 +8,7 @@
     font-family: "Poppins", sans-serif;
 }
 
-body {
+.auth-body {
     height: 100vh;
     width: 100vw;
     display: flex;
@@ -38,7 +38,7 @@ header {
     letter-spacing: 1.5px;
 }
 
-.container {
+.auth-container {
     height: 600px;
     width: 500px;
     background-color: white;
@@ -47,7 +47,7 @@ header {
     overflow: hidden;
 }
 
-.btn {
+.auth-btn {
     height: 60px;
     width: 300px;
     margin: 20px auto;

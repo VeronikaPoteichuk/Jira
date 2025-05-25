@@ -4,6 +4,7 @@ import { Button } from "reactstrap";
 import CreateUserModal from "../modals/CreateUserModal";
 import EditUserModal from "../modals/EditUserModal";
 import DeleteUserModal from "../modals/DeleteUserModal";
+// import "./style.css";
 
 const ListUsers = () => {
   const [users, setUsers] = useState([]);
@@ -46,7 +47,7 @@ const ListUsers = () => {
   };
 
   return (
-    <div className="container mt-4">
+    <div className="list-container">
       <h3>Users list</h3>
       <ul>
         {users.map((user, index) => (

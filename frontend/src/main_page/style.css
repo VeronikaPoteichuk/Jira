@@ -1,0 +1,235 @@
+.homepage-container {
+    background: linear-gradient(90deg, #c0cbe2,#7798cb);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.homepage-card {
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 1200px;
+    overflow: hidden;
+}
+
+.homepage-header {
+    display: flex;
+    align-items: baseline;
+    padding: 24px 40px;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.nav-links a {
+    margin: 0 5px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    padding: 10px;
+}
+
+.nav-links a:hover {
+    color: #1f2937;
+    background: #f3f4f6;
+    border-radius: 8px;
+}
+
+.nav-links a:focus-within {
+    color: rgba(var(--bs-link-color-rgb));
+}
+
+.auth-buttons button {
+    margin-left: 12px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.main-login {
+    background: transparent;
+    color: #333;
+}
+
+.main-signup {
+    font-size: 22px;
+    border: none;
+    outline: none;
+    height: 60px;
+    width: 150px;
+    border-radius: 20px;
+    background: linear-gradient(104deg, #c0cbe2, #7798cb);
+}
+
+.try-btn:hover,
+.main-signup:hover {
+    transform: scale(1.05);
+    color: azure;
+}
+
+.main-login:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.homepage-main {
+    display: flex;
+    flex-direction: row;
+    padding: 60px 40px 0px 40px;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.text-section {
+    flex: 1;
+    min-width: 300px;
+}
+
+.trial-text {
+    color: #6b7280;
+    text-transform: uppercase;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.main-heading {
+    font-size: 42px;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 20px;
+}
+
+.description {
+    color: #4b5563;
+    font-size: 16px;
+    margin-bottom: 28px;
+}
+
+.cta-buttons button {
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    margin-right: 16px;
+}
+
+.try-btn {
+    border: none;
+    outline: none;
+    height: 50px;
+    width: 100px;
+    border-radius: 20px;
+    background: linear-gradient(104deg, #c0cbe2, #7798cb);
+}
+
+.how-btn {
+    border: 1px solid #ccc;
+    background: white;
+    color: #111;
+}
+
+.image-section {
+    flex: 1;
+    min-width: 300px;
+    display: flex;
+    justify-content: center;
+}
+
+.image-section img {
+    max-width: 100%;
+    height: auto;
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.1));
+}
+
+.homepage-footer {
+    text-align: center;
+}
+
+.trusted-text {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.logos {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 24px;
+    color: #9ca3af;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.features-section {
+    padding: 60px 40px;
+    text-align: center;
+}
+
+.features-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 40px;
+}
+
+.features-list {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.feature-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+    padding: 24px;
+    width: 300px;
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+}
+
+.feature-card h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 12px;
+}
+
+.feature-card p {
+    font-size: 15px;
+    color: #6b7280;
+    line-height: 1.6;
+}
+
+@keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.8s ease forwards;
+}

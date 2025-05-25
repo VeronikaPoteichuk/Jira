@@ -1,11 +1,13 @@
 import React, { useRef, useState } from 'react';
-import axios from '../api/axios';
+import axiosInstance from '../api/axios';
 import './style.css';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
+import { useNavigate } from 'react-router-dom';
 
 const AuthFormContent = () => {
   const sliderRef = useRef(null);
   const formSectionRef = useRef(null);
+  const navigate = useNavigate();
 
   const [loginData, setLoginData] = useState({ username: '', password: '' });
   const [signupData, setSignupData] = useState({
@@ -42,13 +44,13 @@ const AuthFormContent = () => {
       return;
     }
     try {
-      await axios.post("/users/", {
+      await axiosInstance.post("/users/", {
         username: signupData.username,
         email: signupData.email,
         password: signupData.password
       });
       setSignupError(null);
-      alert("User created!");
+      // alert("User created!");
       handleLoginClick();
     } catch (error) {
       console.error(error);
@@ -59,36 +61,19 @@ const AuthFormContent = () => {
 
   const handleLoginSubmit = async () => {
     try {
-      const res = await axios.post("/api/auth/login/", {
+      const res = await axiosInstance.post("/api/auth/login/", {
         username: loginData.username,
         password: loginData.password
       });
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
-      alert("Login successful!");
-      window.location.href = "/dashboard";
+      // alert("Login successful!");
+      navigate("/users");
     } catch (error) {
       console.error(error);
       alert("Login failed");
     }
   };
-
-  // const handleGoogleLoginSuccess = async (tokenResponse) => {
-  //   try {
-  //     const res = await axios.post("/api/auth/google/", {
-  //       credential: tokenResponse.credential,
-  //     });
-
-  //     const { access, refresh } = res.data;
-  //     localStorage.setItem("access", access);
-  //     localStorage.setItem("refresh", refresh);
-  //     alert("Google login successful!");
-  //     window.location.href = "/dashboard";
-  //   } catch (err) {
-  //     console.error("Google login failed", err);
-  //     alert("Google login failed");
-  //   }
-  // };
 
   const loginWithGoogle = useGoogleLogin({
     flow: 'implicit',
@@ -108,21 +93,21 @@ const AuthFormContent = () => {
         const data = await res.json();
         localStorage.setItem("access", data.access);
         localStorage.setItem("refresh", data.refresh);
-        window.location.href = "/dashboard";
+        navigate("/users");
       }
     },
     onError: () => console.error("Google login error"),
   });
 
   return (
-    <div>
+    <div className="auth-body">
       <header>
         <h1 className="heading">Jira-like system</h1>
       </header>
 
-      <div className="container">
+      <div className="auth-container">
         <div className="slider" ref={sliderRef}></div>
-        <div className="btn">
+        <div className="auth-btn">
           <button className="login" onClick={handleLoginClick}>Sign in</button>
           <button className="signup" onClick={handleSignupClick}>Sign up</button>
         </div>
