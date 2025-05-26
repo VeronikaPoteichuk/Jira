@@ -1,0 +1,213 @@
+import React, { useState } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragOverlay
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  useSortable,
+  arrayMove,
+  verticalListSortingStrategy,
+  horizontalListSortingStrategy
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import './style.css';
+
+const initialData = {
+  columns: [
+    {
+      id: 'todo',
+      title: 'To Do',
+      tasks: [
+        { id: 'task-1', content: 'Create login UI' },
+        { id: 'task-2', content: 'Write unit tests' },
+      ],
+    },
+    {
+      id: 'in-progress',
+      title: 'In Progress',
+      tasks: [
+        { id: 'task-3', content: 'Connect API endpoints' },
+      ],
+    },
+    {
+      id: 'done',
+      title: 'Done',
+      tasks: [
+        { id: 'task-4', content: 'Deploy to production' },
+      ],
+    },
+  ],
+};
+
+function TaskBoard() {
+  const [columns, setColumns] = useState(initialData.columns);
+  const [activeTask, setActiveTask] = useState(null);
+  const [activeColumn, setActiveColumn] = useState(null);
+
+  const sensors = useSensors(useSensor(PointerSensor));
+
+  const handleDragStart = (event) => {
+    const { active } = event;
+    const task = findTask(active.id);
+    const column = columns.find(col => col.id === active.id);
+
+    if (task) setActiveTask(task);
+    else if (column) setActiveColumn(column);
+  };
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    if (active.id === over.id) {
+      resetDrag();
+      return;
+    }
+
+    // Dragging column
+    if (columns.some(col => col.id === active.id)) {
+      const oldIndex = columns.findIndex(col => col.id === active.id);
+      const newIndex = columns.findIndex(col => col.id === over.id);
+      setColumns(arrayMove(columns, oldIndex, newIndex));
+      resetDrag();
+      return;
+    }
+
+    // Dragging task
+    const fromColumn = columns.find(col =>
+      col.tasks.find(task => task.id === active.id)
+    );
+    const toColumn = columns.find(col =>
+      col.id === over.id ||
+      col.tasks.find(task => task.id === over.id)
+    );
+
+    if (!fromColumn || !toColumn) {
+      resetDrag();
+      return;
+    }
+
+    const task = fromColumn.tasks.find(t => t.id === active.id);
+
+    if (fromColumn.id === toColumn.id) {
+      const oldIdx = fromColumn.tasks.findIndex(t => t.id === active.id);
+      const newIdx = toColumn.tasks.findIndex(t => t.id === over.id);
+      const updatedTasks = arrayMove(fromColumn.tasks, oldIdx, newIdx);
+      updateColumnTasks(fromColumn.id, updatedTasks);
+    } else {
+      const newFrom = fromColumn.tasks.filter(t => t.id !== active.id);
+      const insertIndex = toColumn.tasks.findIndex(t => t.id === over.id);
+      const newTo = [...toColumn.tasks];
+      if (insertIndex === -1) newTo.push(task);
+      else newTo.splice(insertIndex, 0, task);
+
+      updateColumnTasks(fromColumn.id, newFrom);
+      updateColumnTasks(toColumn.id, newTo);
+    }
+
+    resetDrag();
+  };
+
+  const updateColumnTasks = (columnId, newTasks) => {
+    setColumns(prev =>
+      prev.map(col =>
+        col.id === columnId ? { ...col, tasks: newTasks } : col
+      )
+    );
+  };
+
+  const resetDrag = () => {
+    setActiveTask(null);
+    setActiveColumn(null);
+  };
+
+  const findTask = (taskId) => {
+    for (let col of columns) {
+      const found = col.tasks.find(t => t.id === taskId);
+      if (found) return found;
+    }
+    return null;
+  };
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="taskboard">
+        <SortableContext
+          items={columns.map(col => col.id)}
+          strategy={horizontalListSortingStrategy}
+        >
+          {columns.map(col => (
+            <Column key={col.id} column={col} />
+          ))}
+        </SortableContext>
+        <DragOverlay>
+          {activeTask && <TaskCard task={activeTask} isDragging />}
+          {activeColumn && <Column column={activeColumn} isDragging />}
+        </DragOverlay>
+      </div>
+    </DndContext>
+  );
+}
+
+function Column({ column, isDragging }) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+    id: column.id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <div className={`column ${isDragging ? 'dragging' : ''}`}>
+        <h2 className="column-title">{column.title}</h2>
+        <SortableContext items={column.tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+          <div className="task-list" id={column.id}>
+            {column.tasks.map(task => (
+              <SortableTaskCard key={task.id} task={task} />
+            ))}
+          </div>
+        </SortableContext>
+      </div>
+    </div>
+  );
+}
+
+function SortableTaskCard({ task }) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+    id: task.id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <TaskCard task={task} />
+    </div>
+  );
+}
+
+function TaskCard({ task, isDragging }) {
+  return (
+    <div className={`task-card ${isDragging ? 'dragging' : ''}`}>
+      {task.content}
+    </div>
+  );
+}
+
+export default TaskBoard;

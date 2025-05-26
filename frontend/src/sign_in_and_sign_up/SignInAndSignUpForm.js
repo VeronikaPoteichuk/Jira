@@ -68,7 +68,7 @@ const AuthFormContent = () => {
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
       // alert("Login successful!");
-      navigate("/users");
+      navigate("/board");
     } catch (error) {
       console.error(error);
       alert("Login failed");
@@ -93,7 +93,7 @@ const AuthFormContent = () => {
         const data = await res.json();
         localStorage.setItem("access", data.access);
         localStorage.setItem("refresh", data.refresh);
-        navigate("/users");
+        navigate("/board");
       }
     },
     onError: () => console.error("Google login error"),
