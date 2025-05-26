@@ -5,12 +5,18 @@ from rest_framework.response import Response
 from rest_framework import status
 from asgiref.sync import sync_to_async
 from rest_framework.exceptions import NotFound
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 User = get_user_model()
 
 
 class AsyncUserViewSet(ModelViewSet):
     queryset = User.objects.all()
+
+    def get_permissions(self):
+        if self.action == "create":
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get_serializer_class(self):
         if self.action == "create":

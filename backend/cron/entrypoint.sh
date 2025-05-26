@@ -1,5 +1,7 @@
 #!/bin/bash
 
+env | grep -E '^DJANGO_SECRET_KEY=|^DB_' >> /etc/environment
+
 if [[ $(python manage.py showmigrations | grep '\[ \]') ]]; then
     python manage.py migrate
 fi

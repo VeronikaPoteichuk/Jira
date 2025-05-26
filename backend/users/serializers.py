@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
+
 User = get_user_model()
 
 
@@ -104,3 +105,10 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             instance.set_password(password)
             instance.save()
         return instance
+
+
+from rest_framework import serializers
+
+
+class GoogleAuthSerializer(serializers.Serializer):
+    access_token = serializers.CharField()

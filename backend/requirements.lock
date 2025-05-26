@@ -7,6 +7,7 @@ asgiref==3.8.1
     #   channels
     #   daphne
     #   django
+    #   django-allauth
     #   django-cors-headers
 async-property==0.2.2
     # via adrf
@@ -45,22 +46,33 @@ daphne==4.1.2
     # via jira (pyproject.toml)
 distlib==0.3.9
     # via virtualenv
+dj-rest-auth==7.0.1
+    # via jira (pyproject.toml)
 django==5.1.7
     # via
     #   jira (pyproject.toml)
     #   adrf
     #   channels
+    #   dj-rest-auth
+    #   django-allauth
     #   django-cors-headers
     #   djangorestframework
+    #   djangorestframework-simplejwt
     #   drf-spectacular
     #   drf-spectacular-sidecar
+django-allauth==65.8.0
+    # via jira (pyproject.toml)
 django-cors-headers==4.7.0
     # via jira (pyproject.toml)
 djangorestframework==3.16.0
     # via
     #   jira (pyproject.toml)
     #   adrf
+    #   dj-rest-auth
+    #   djangorestframework-simplejwt
     #   drf-spectacular
+djangorestframework-simplejwt==5.5.0
+    # via jira (pyproject.toml)
 drf-spectacular==0.28.0
     # via jira (pyproject.toml)
 drf-spectacular-sidecar==2025.3.1
@@ -104,6 +116,8 @@ pyasn1-modules==0.4.2
     # via service-identity
 pycparser==2.22
     # via cffi
+pyjwt==2.9.0
+    # via djangorestframework-simplejwt
 pyopenssl==25.0.0
     # via twisted
 pyyaml==6.0.2
