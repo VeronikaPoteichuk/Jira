@@ -53,7 +53,7 @@ urlpatterns = [
     path("api/auth/login/", LoginView.as_view(), name="token_obtain_pair"),
     path("api/auth/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/auth/logout/", LogoutView.as_view(), name="token_logout"),
-    path("api/auth/google/", GoogleAuthView.as_view(), name="google_login"),
+    path("api/auth/google/", GoogleAuthView.as_view(), name="google_auth"),
 ]
 
 

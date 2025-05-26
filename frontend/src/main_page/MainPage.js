@@ -1,6 +1,7 @@
 import React from "react";
 import "./style.css";
 import { useNavigate } from 'react-router-dom';
+import aboutImage from '../assets/pictures/about-jira-service-management.png';
 
 const HomePage = () => {
     const navigate = useNavigate();
@@ -8,6 +9,7 @@ const HomePage = () => {
     const handleLoginSubmit = async () => {
           navigate("/auth");
       };
+
   return (
     <div className="homepage-container">
       <div className="homepage-card">
@@ -37,7 +39,7 @@ const HomePage = () => {
             </div>
           </div>
           <div className="image-section">
-            <img src="https://wac-cdn.atlassian.com/dam/jcr:de5efb49-941e-41a7-8eb6-946ddcaa103c/about-jira-service-management.png?cdnVersion=2722" alt="Project Collaboration" />
+            <img src={aboutImage} alt="Project Collaboration" />
           </div>
         </main>
 
