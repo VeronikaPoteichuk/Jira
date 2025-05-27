@@ -16,6 +16,9 @@ class Column(models.Model):
     name = models.CharField(max_length=100)
     order = models.PositiveIntegerField(default=0)
 
+    class Meta:
+        ordering = ["order"]
+
 
 class Task(models.Model):
     column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="tasks")
@@ -26,3 +29,6 @@ class Task(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["order"]

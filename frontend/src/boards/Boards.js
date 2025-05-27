@@ -62,14 +62,12 @@ function TaskBoard() {
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
-    if (!over) return;
-
-    if (active.id === over.id) {
+    if (!over || active.id === over.id) {
       resetDrag();
       return;
     }
 
-    // Dragging column
+    // Перемещение колонок
     if (columns.some(col => col.id === active.id)) {
       const oldIndex = columns.findIndex(col => col.id === active.id);
       const newIndex = columns.findIndex(col => col.id === over.id);
@@ -78,13 +76,13 @@ function TaskBoard() {
       return;
     }
 
-    // Dragging task
+    // Перемещение задач
     const fromColumn = columns.find(col =>
-      col.tasks.find(task => task.id === active.id)
+      col.tasks.some(task => task.id === active.id)
     );
     const toColumn = columns.find(col =>
       col.id === over.id ||
-      col.tasks.find(task => task.id === over.id)
+      col.tasks.some(task => task.id === over.id)
     );
 
     if (!fromColumn || !toColumn) {
@@ -150,9 +148,10 @@ function TaskBoard() {
             <Column key={col.id} column={col} />
           ))}
         </SortableContext>
+
         <DragOverlay>
-          {activeTask && <TaskCard task={activeTask} isDragging />}
-          {activeColumn && <Column column={activeColumn} isDragging />}
+          {activeTask ? <TaskCard task={activeTask} isDragging /> :
+           activeColumn ? <Column column={activeColumn} isDragging /> : null}
         </DragOverlay>
       </div>
     </DndContext>
@@ -170,11 +169,20 @@ function Column({ column, isDragging }) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <div className={`column ${isDragging ? 'dragging' : ''}`}>
+    <div
+      className={`column-wrapper ${isDragging ? 'dragging' : ''}`}
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+    >
+      <div className="column">
         <h2 className="column-title">{column.title}</h2>
-        <SortableContext items={column.tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-          <div className="task-list" id={column.id}>
+        <SortableContext
+          items={column.tasks.map(t => t.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="task-list">
             {column.tasks.map(task => (
               <SortableTaskCard key={task.id} task={task} />
             ))}
