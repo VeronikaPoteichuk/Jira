@@ -1,42 +1,36 @@
 import React from "react";
-import TaskCard from "./TaskCard";
-import { useDroppable } from "@dnd-kit/core";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
-const Column = ({ column }) => {
-  const { setNodeRef } = useDroppable({
-    id: `${column.id}:placeholder`,
+const Column = ({ column, isDragging }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({
+    id: `column:${column.id}`,
   });
 
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
   return (
-    <div className="column">
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="column"
+      data-dragging={isDragging}
+    >
       <h2>
         {column.name}
         <span className="task-count">{column.tasks.length}</span>
       </h2>
-
-      <div className="task-list">
-        {column.tasks.length === 0 ? (
-          <div
-            ref={setNodeRef}
-            className="placeholder"
-            style={{
-              minHeight: 50,
-              borderRadius: "4px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "none",
-              cursor: "default",
-            }}
-          >
-            Column is empty
-          </div>
-        ) : (
-          column.tasks.map((task) => (
-            <TaskCard key={task.id} task={{ ...task, column: column.id }} />
-          ))
-        )}
-      </div>
     </div>
   );
 };

@@ -2,18 +2,19 @@ import React, { useEffect, useState } from "react";
 import axiosInstance from "../api/axios";
 import {
   DndContext,
-  closestCenter,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
   DragOverlay,
+  closestCorners,
 } from "@dnd-kit/core";
 import {
-  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
+  horizontalListSortingStrategy,
+  arrayMove,
 } from "@dnd-kit/sortable";
 import Column from "./Column";
 import TaskCard from "./TaskCard";
@@ -22,9 +23,14 @@ import "./style.css";
 const Board = () => {
   const [columns, setColumns] = useState([]);
   const [activeTask, setActiveTask] = useState(null);
+  const [activeColumn, setActiveColumn] = useState(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
@@ -36,36 +42,60 @@ const Board = () => {
 
   const handleDragStart = (event) => {
     const { active } = event;
-    const [sourceColumnId, taskId] = active.id.split(":");
-    const sourceColumn = columns.find((col) => col.id === parseInt(sourceColumnId));
-    const task = sourceColumn.tasks.find((t) => t.id === parseInt(taskId));
-    setActiveTask(task);
+    const [type, columnId, taskId] = active.id.toString().split(":");
+
+    if (type === "column") {
+      const column = columns.find((col) => col.id === parseInt(columnId));
+      setActiveColumn(column);
+    } else {
+      const sourceColumn = columns.find((col) => col.id === parseInt(columnId));
+      const task = sourceColumn.tasks.find((t) => t.id === parseInt(taskId));
+      setActiveTask(task);
+    }
   };
 
   const handleDragEnd = async (event) => {
     const { active, over } = event;
     if (!over) return;
 
-    const [sourceColumnId, taskId] = active.id.split(":");
-    const [targetColumnId, targetTaskId] = over.id.split(":");
+    const [activeType, activeColumnId, activeTaskId] = active.id.toString().split(":");
+    const [overType, overColumnId, overTaskId] = over.id.toString().split(":");
 
-    if (!taskId) return;
+    if (activeType === "column" && overType === "column") {
+      const oldIndex = columns.findIndex((col) => col.id === parseInt(activeColumnId));
+      const newIndex = columns.findIndex((col) => col.id === parseInt(overColumnId));
+
+      if (oldIndex !== newIndex) {
+        const newColumns = arrayMove(columns, oldIndex, newIndex);
+        setColumns(newColumns);
+
+        await axiosInstance.post("/api/columns/reorder/", {
+          columns: newColumns.map((col, index) => ({
+            id: col.id,
+            order: index,
+          })),
+        });
+      }
+      setActiveColumn(null);
+      return;
+    }
 
     const newColumns = [...columns];
-    const sourceColumn = newColumns.find((col) => col.id === parseInt(sourceColumnId));
-    const targetColumn = newColumns.find((col) => col.id === parseInt(targetColumnId));
+    const sourceColumn = newColumns.find((col) => col.id === parseInt(activeColumnId));
+    const targetColumn = newColumns.find((col) => col.id === parseInt(overColumnId));
 
-    const taskIndex = sourceColumn.tasks.findIndex((task) => task.id === parseInt(taskId));
+    if (!sourceColumn || !targetColumn) return;
+
+    const taskIndex = sourceColumn.tasks.findIndex((task) => task.id === parseInt(activeTaskId));
+    if (taskIndex === -1) return;
+
     const [movedTask] = sourceColumn.tasks.splice(taskIndex, 1);
     movedTask.column = targetColumn.id;
 
-    if (targetTaskId === "placeholder") {
+    if (overTaskId === "placeholder") {
       targetColumn.tasks.push(movedTask);
-    } else if (sourceColumnId === targetColumnId) {
-      const targetIndex = targetColumn.tasks.findIndex((task) => task.id === parseInt(targetTaskId));
-      targetColumn.tasks.splice(targetIndex, 0, movedTask);
     } else {
-      const targetIndex = targetColumn.tasks.findIndex((task) => task.id === parseInt(targetTaskId));
+      const targetIndex = targetColumn.tasks.findIndex((task) => task.id === parseInt(overTaskId));
       if (targetIndex === -1) {
         targetColumn.tasks.push(movedTask);
       } else {
@@ -90,24 +120,40 @@ const Board = () => {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={closestCorners}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
       <div className="board" style={{ display: "flex", gap: "1rem" }}>
-        {columns.map((column) => (
-          <SortableContext
-            key={column.id}
-            items={column.tasks.map((task) => `${column.id}:${task.id}`)}
-            strategy={verticalListSortingStrategy}
-          >
-            <Column column={column} />
-          </SortableContext>
-        ))}
+        <SortableContext
+          items={columns.map(col => `column:${col.id}`)}
+          strategy={horizontalListSortingStrategy}
+        >
+          {columns.map((column) => (
+            <div className="background-columns" key={column.id} style={{ minWidth: 300 }}>
+              <Column column={column} />
+              <SortableContext
+                items={column.tasks.map((task) => `task:${column.id}:${task.id}`)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  {column.tasks.map((task) => (
+                    <TaskCard key={task.id} task={{ ...task, column: column.id }} />
+                  ))}
+                </div>
+              </SortableContext>
+            </div>
+          ))}
+        </SortableContext>
       </div>
-      <DragOverlay>{activeTask ? <TaskCard task={activeTask} /> : null}</DragOverlay>
+      <DragOverlay>
+        {activeColumn ? (
+          <Column column={activeColumn} isDragging />
+        ) : activeTask ? (
+          <TaskCard task={activeTask} />
+        ) : null}
+      </DragOverlay>
     </DndContext>
-
   );
 };
 
