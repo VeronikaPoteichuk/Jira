@@ -1,10 +1,8 @@
 from adrf.viewsets import ModelViewSet
 from .models import Board, Column, Task
 from .serializers import BoardSerializer, ColumnSerializer, TaskSerializer
-from rest_framework.filters import OrderingFilter
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework import status
 
 
 class BoardViewSet(ModelViewSet):
