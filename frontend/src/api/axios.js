@@ -35,4 +35,38 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const refreshToken = localStorage.getItem("refresh");
+        const response = await axios.post(
+          "http://localhost:8000/api/auth/refresh/",
+          {
+            refresh: refreshToken,
+          }
+        );
+
+        const { access } = response.data;
+        localStorage.setItem("access", access);
+
+        originalRequest.headers.Authorization = `Bearer ${access}`;
+        return axios(originalRequest);
+      } catch (error) {
+        localStorage.removeItem("access");
+        localStorage.removeItem("refresh");
+        window.location.href = "/login";
+        return Promise.reject(error);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export default axiosInstance;

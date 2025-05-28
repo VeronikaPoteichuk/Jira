@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 from django.core.exceptions import ImproperlyConfigured
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -98,6 +99,8 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
     "BLACKLIST_AFTER_ROTATION": True,
     "ROTATE_REFRESH_TOKENS": True,
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=10),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
