@@ -60,7 +60,7 @@ axiosInstance.interceptors.response.use(
       } catch (error) {
         localStorage.removeItem("access");
         localStorage.removeItem("refresh");
-        window.location.href = "/login";
+        window.location.href = "/auth";
         return Promise.reject(error);
       }
     }

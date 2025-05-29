@@ -117,6 +117,23 @@ const Board = () => {
     });
   };
 
+  const handleUpdateColumnName = async (columnId, newName) => {
+    try {
+      await axiosInstance.patch(`/api/columns/${columnId}/`, {
+        name: newName,
+      });
+
+      setColumns(columns.map(col =>
+        col.id === columnId ? { ...col, name: newName } : col
+      ));
+
+      return true;
+    } catch (error) {
+      console.error("Failed to update column name:", error);
+      return false;
+    }
+  };
+
   return (
     <DndContext
       sensors={sensors}
@@ -131,7 +148,10 @@ const Board = () => {
         >
           {columns.map((column) => (
             <div className="background-columns" key={column.id} style={{ minWidth: 300 }}>
-              <Column column={column} />
+              <Column
+                column={column}
+                onUpdateName={handleUpdateColumnName}
+              />
               <SortableContext
                 items={column.tasks.map((task) => `task:${column.id}:${task.id}`)}
                 strategy={verticalListSortingStrategy}
@@ -148,7 +168,11 @@ const Board = () => {
       </div>
       <DragOverlay>
         {activeColumn ? (
-          <Column column={activeColumn} isDragging />
+          <Column
+            column={activeColumn}
+            onUpdateName={handleUpdateColumnName}
+            isDragging
+          />
         ) : activeTask ? (
           <TaskCard task={activeTask} />
         ) : null}
