@@ -24,12 +24,13 @@ const Board = () => {
   const [columns, setColumns] = useState([]);
   const [activeTask, setActiveTask] = useState(null);
   const [activeColumn, setActiveColumn] = useState(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [columnToDelete, setColumnToDelete] = useState(null);
+
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
+      activationConstraint: { distance: 5 },
     }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
@@ -119,20 +120,44 @@ const Board = () => {
 
   const handleUpdateColumnName = async (columnId, newName) => {
     try {
-      await axiosInstance.patch(`/api/columns/${columnId}/`, {
-        name: newName,
-      });
-
-      setColumns(columns.map(col =>
-        col.id === columnId ? { ...col, name: newName } : col
-      ));
-
+      await axiosInstance.patch(`/api/columns/${columnId}/`, { name: newName });
+      setColumns(columns.map(col => col.id === columnId ? { ...col, name: newName } : col));
       return true;
     } catch (error) {
       console.error("Failed to update column name:", error);
       return false;
     }
   };
+
+  const handleAddColumn = async () => {
+    try {
+      const res = await axiosInstance.post("/api/columns/", {
+        name: "New column",
+        board: 1,
+        order: columns.length,
+      });
+
+      setColumns((prev) => [
+        ...prev,
+        {
+          ...res.data,
+          tasks: [],
+          isNew: true,
+        },
+      ]);
+    } catch (error) {
+      console.error("Ошибка при добавлении колонки:", error.response?.data || error.message);
+    }
+  };
+  const handleDeleteColumn = async (columnId) => {
+    try {
+      await axiosInstance.delete(`/api/columns/${columnId}/`);
+      setColumns(columns.filter((col) => col.id !== columnId));
+    } catch (error) {
+      console.error("Ошибка при удалении колонки:", error);
+    }
+  };
+
 
   return (
     <DndContext
@@ -141,42 +166,58 @@ const Board = () => {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="board" style={{ display: "flex", gap: "1rem" }}>
-        <SortableContext
-          items={columns.map(col => `column:${col.id}`)}
-          strategy={horizontalListSortingStrategy}
-        >
-          {columns.map((column) => (
-            <div className="background-columns" key={column.id} style={{ minWidth: 300 }}>
-              <Column
-                column={column}
-                onUpdateName={handleUpdateColumnName}
-              />
-              <SortableContext
-                items={column.tasks.map((task) => `task:${column.id}:${task.id}`)}
-                strategy={verticalListSortingStrategy}
-              >
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  {column.tasks.map((task) => (
-                    <TaskCard key={task.id} task={{ ...task, column: column.id }} />
-                  ))}
-                </div>
-              </SortableContext>
-            </div>
-          ))}
-        </SortableContext>
-      </div>
+    <div className="board" style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
+      <SortableContext
+        items={columns.map(col => `column:${col.id}`)}
+        strategy={horizontalListSortingStrategy}
+      >
+        {columns.map((column) => (
+          <div className="background-columns" key={column.id} style={{ minWidth: 300 }}>
+            <Column
+              column={column}
+              onUpdateName={handleUpdateColumnName}
+              onDelete={handleDeleteColumn}
+
+
+            />
+            <SortableContext
+              items={column.tasks.map((task) => `task:${column.id}:${task.id}`)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {column.tasks.map((task) => (
+                  <TaskCard key={task.id} task={{ ...task, column: column.id }} />
+                ))}
+              </div>
+            </SortableContext>
+          </div>
+        ))}
+      </SortableContext>
+
+      <button
+        onClick={handleAddColumn}
+        className="add-column-btn"
+        style={{
+          minWidth: 300,
+          padding: "1rem",
+          border: "2px dashed #ccc",
+          borderRadius: "8px",
+          background: "transparent",
+          cursor: "pointer",
+        }}
+      >
+        + Добавить колонку
+      </button>
+    </div>
+
       <DragOverlay>
         {activeColumn ? (
-          <Column
-            column={activeColumn}
-            onUpdateName={handleUpdateColumnName}
-            isDragging
-          />
+          <Column column={activeColumn} onUpdateName={handleUpdateColumnName} isDragging />
         ) : activeTask ? (
           <TaskCard task={activeTask} />
         ) : null}
       </DragOverlay>
+
     </DndContext>
   );
 };
