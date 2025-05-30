@@ -12,8 +12,8 @@ const Column = ({ column, isDragging, onUpdateName, onDelete }) => {
     listeners,
     setNodeRef,
     transform,
-    transition,
-  } = useSortable({
+    transition
+} = useSortable({
     id: `column:${column.id}`,
   });
 
@@ -48,7 +48,7 @@ const Column = ({ column, isDragging, onUpdateName, onDelete }) => {
             <input
               type="text"
               value={editedName}
-              onChange={(e) => setEditedName(e.target.value)}
+              onChange={e => setEditedName(e.target.value)}
               autoFocus
             />
             <div className="edit-buttons">
@@ -58,11 +58,8 @@ const Column = ({ column, isDragging, onUpdateName, onDelete }) => {
               <button onClick={handleCancel} className="edit-btn cancel-btn">
                 &#10008;
               </button>
-              <button
-                className="delete-column-btn"
-                onClick={() => setShowDeleteModal(true)}
-              >
-                🗑
+              <button className="delete-column-btn" onClick={() => setShowDeleteModal(true)}>
+                &#128465;
               </button>
             </div>
           </div>
@@ -75,65 +72,29 @@ const Column = ({ column, isDragging, onUpdateName, onDelete }) => {
       </div>
 
       {showDeleteModal && (
-  <div
-    className="modal-overlay"
-    style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100vw',
-      height: '100vh',
-      background: 'rgba(0, 0, 0, 0.4)',
-      zIndex: 1000,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      animation: 'fadeIn 0.3s ease',
-    }}
-  >
-    <div
-      className="modal-content"
-      style={{
-        background: '#fff',
-        padding: '2rem',
-        borderRadius: '12px',
-        width: '400px',
-        maxWidth: '90%',
-        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)',
-        zIndex: 1001,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        animation: 'slideInUp 0.3s ease',
-      }}
-    >
-      <h style={{ marginBottom: '1rem', fontSize: '1.25rem', textAlign: 'center' }}>
-        Delete Column?
-      </h>
-      <p style={{ textAlign: 'center', color: '#666', marginBottom: '2rem' }}>
-        Are you sure you want to delete this column? This action cannot be undone.
-      </p>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', width: '100%' }}>
-        <button
-          className="cancel-button"
-          onClick={() => setShowDeleteModal(false)}
-        >
-          Cancel
-        </button>
-        <button
-            className="delete-button"
-            onClick={() => {
-                setShowDeleteModal(false);
-                onDelete(column.id);
-            }}
-            >
-            Delete
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
+        <div className="modal-overlay">
+          <div className="modal-contentt">
+            <p4 className="modal-title-text">Delete Column?</p4>
+            <p className="modal-description">
+              Are you sure you want to delete this column? This action cannot be undone.
+            </p>
+            <div className="modal-buttons">
+              <button className="cancel-button" onClick={() => setShowDeleteModal(false)}>
+                Cancel
+              </button>
+              <button
+                className="delete-button"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  onDelete(column.id);
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

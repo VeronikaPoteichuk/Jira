@@ -1,20 +1,20 @@
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
-  entry: './src/index.js',
+  entry: "./src/index.js",
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js',
+    path: path.resolve(__dirname, "dist"),
+    filename: "bundle.js",
     clean: true,
   },
-  mode: 'development',
+  mode: "development",
   module: {
     rules: [
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
-        use: 'babel-loader'
+        use: "babel-loader",
       },
       {
         test: /\.css$/i,
@@ -22,26 +22,26 @@ module.exports = {
       },
       {
         test: /\.(png|jpe?g|gif|svg)$/i,
-        type: 'asset/resource',
+        type: "asset/resource",
       },
-    ]
+    ],
   },
   resolve: {
-    extensions: ['.js', '.jsx'],
+    extensions: [".js", ".jsx"],
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'public/index.html',
+      template: "public/index.html",
     }),
   ],
   devServer: {
-    static: './dist',
+    static: "./dist",
     port: 3000,
     historyApiFallback: true,
     proxy: [
       {
-        context: ['/users'],
-        target: 'http://backend:8000',
+        context: ["/users"],
+        target: "http://backend:8000",
         changeOrigin: true,
       },
     ],

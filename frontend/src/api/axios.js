@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const getCookie = (name) => {
+const getCookie = name => {
   let cookieValue = null;
   if (document.cookie && document.cookie !== "") {
     const cookies = document.cookie.split(";");
@@ -25,19 +25,19 @@ const axiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.request.use(
-  (config) => {
+  config => {
     const accessToken = localStorage.getItem("access");
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  error => Promise.reject(error),
 );
 
 axiosInstance.interceptors.response.use(
-  (response) => response,
-  async (error) => {
+  response => response,
+  async error => {
     const originalRequest = error.config;
 
     if (error.response.status === 401 && !originalRequest._retry) {
@@ -45,12 +45,9 @@ axiosInstance.interceptors.response.use(
 
       try {
         const refreshToken = localStorage.getItem("refresh");
-        const response = await axios.post(
-          "http://localhost:8000/api/auth/refresh/",
-          {
-            refresh: refreshToken,
-          }
-        );
+        const response = await axios.post("http://localhost:8000/api/auth/refresh/", {
+          refresh: refreshToken,
+        });
 
         const { access } = response.data;
         localStorage.setItem("access", access);
@@ -66,7 +63,7 @@ axiosInstance.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default axiosInstance;
