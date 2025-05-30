@@ -4,7 +4,6 @@ import { Button } from "reactstrap";
 import CreateUserModal from "../modals/CreateUserModal";
 import EditUserModal from "../modals/EditUserModal";
 import DeleteUserModal from "../modals/DeleteUserModal";
-// import "./style.css";
 
 const ListUsers = () => {
   const [users, setUsers] = useState([]);
@@ -14,7 +13,7 @@ const ListUsers = () => {
   const [selectedUser, setSelectedUser] = useState(null);
 
   const fetchUsers = () => {
-    axios.get("/users/").then((res) => setUsers(res.data));
+    axios.get("/users/").then(res => setUsers(res.data));
   };
 
   useEffect(() => {
@@ -27,12 +26,12 @@ const ListUsers = () => {
 
   const toggleEditModal = (user = null) => {
     setSelectedUser(user);
-    setEditModalOpen((prev) => !prev);
+    setEditModalOpen(prev => !prev);
   };
 
   const toggleDeleteModal = (user = null) => {
     setSelectedUser(user);
-    setDeleteModalOpen((prev) => !prev);
+    setDeleteModalOpen(prev => !prev);
   };
 
   const deleteUser = () => {
@@ -43,7 +42,7 @@ const ListUsers = () => {
         toggleDeleteModal();
         fetchUsers();
       })
-      .catch((err) => console.error("Error deleting user:", err));
+      .catch(err => console.error("Error deleting user:", err));
   };
 
   return (
@@ -52,7 +51,10 @@ const ListUsers = () => {
       <ul>
         {users.map((user, index) => (
           <li key={user.id} className="mb-2">
-            <strong>{index + 1}. {user.username}</strong> — {user.email}
+            <strong>
+              {index + 1}. {user.username}
+            </strong>{" "}
+            — {user.email}
             <Button
               color="secondary"
               size="sm"
