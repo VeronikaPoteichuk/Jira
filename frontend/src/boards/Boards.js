@@ -23,6 +23,7 @@ import "./style.css";
 
 const Board = () => {
   const [columns, setColumns] = useState([]);
+  // const [tasks, setTasks] = useState([]);
   const [activeTask, setActiveTask] = useState(null);
   const [activeColumn, setActiveColumn] = useState(null);
 
@@ -157,6 +158,15 @@ const Board = () => {
     }
   };
 
+  // const handleDeleteTask = async taskId => {
+  //   try {
+  //     await axiosInstance.delete(`/api/tasks/${taskId}/`);
+  //     setTasks(tasks.filter(task => task.id !== taskId));
+  //   } catch (error) {
+  //     console.error("Error deleting task:", error);
+  //   }
+  // };
+
   const handleAddTask = async (columnId, title) => {
     try {
       const column = columns.find(col => col.id === columnId);
@@ -216,7 +226,24 @@ const Board = () => {
                 >
                   <div className="tasks-scroll-area">
                     {column.tasks.map(task => (
-                      <TaskCard key={task.id} task={{ ...task, column: column.id }} />
+                      <TaskCard
+                        key={task.id}
+                        task={{ ...task, column: column.id }}
+                        onDelete={async taskId => {
+                          try {
+                            await axiosInstance.delete(`/api/tasks/${taskId}/`);
+                            setColumns(prev =>
+                              prev.map(col =>
+                                col.id === column.id
+                                  ? { ...col, tasks: col.tasks.filter(task => task.id !== taskId) }
+                                  : col,
+                              ),
+                            );
+                          } catch (error) {
+                            console.error("Error deleting task:", error);
+                          }
+                        }}
+                      />
                     ))}
                   </div>
                 </SortableContext>
@@ -237,7 +264,23 @@ const Board = () => {
         {activeColumn ? (
           <Column column={activeColumn} onUpdateName={handleUpdateColumnName} isDragging />
         ) : activeTask ? (
-          <TaskCard task={activeTask} />
+          <TaskCard
+            task={activeTask}
+            onDelete={async taskId => {
+              try {
+                await axiosInstance.delete(`/api/tasks/${taskId}/`);
+                setColumns(prev =>
+                  prev.map(col =>
+                    col.id === activeTask.column
+                      ? { ...col, tasks: col.tasks.filter(task => task.id !== taskId) }
+                      : col,
+                  ),
+                );
+              } catch (error) {
+                console.error("Error deleting task:", error);
+              }
+            }}
+          />
         ) : null}
       </DragOverlay>
     </DndContext>
