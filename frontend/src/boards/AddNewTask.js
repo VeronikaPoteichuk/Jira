@@ -9,6 +9,13 @@ const AddTaskForm = ({ columnId, onAddTask }) => {
     setNewTaskTitle("");
   };
 
+  const handleKeyDown = e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
   return (
     <div className="add-task-form">
       <input
@@ -16,7 +23,9 @@ const AddTaskForm = ({ columnId, onAddTask }) => {
         placeholder="Enter the task name..."
         value={newTaskTitle}
         onChange={e => setNewTaskTitle(e.target.value)}
+        onKeyDown={handleKeyDown}
         className="task-input"
+        autoFocus
       />
 
       <button onClick={handleSubmit} className="submit-task-button">

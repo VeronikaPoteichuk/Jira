@@ -147,6 +147,7 @@ const Board = () => {
       console.error("Error adding column:", error.response?.data || error.message);
     }
   };
+
   const handleDeleteColumn = async columnId => {
     try {
       await axiosInstance.delete(`/api/columns/${columnId}/`);
@@ -192,23 +193,38 @@ const Board = () => {
           strategy={horizontalListSortingStrategy}
         >
           {columns.map(column => (
-            <div className="background-columns" key={column.id} style={{ minWidth: 300 }}>
-              <Column
-                column={column}
-                onUpdateName={handleUpdateColumnName}
-                onDelete={handleDeleteColumn}
-              />
-              <SortableContext
-                items={column.tasks.map(task => `task:${column.id}:${task.id}`)}
-                strategy={verticalListSortingStrategy}
+            <div className="column-background">
+              <div
+                className="background-columns"
+                key={column.id}
+                style={{
+                  minWidth: 300,
+                  display: "flex",
+                  flexDirection: "column",
+                  maxHeight: "100%",
+                }}
               >
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  {column.tasks.map(task => (
-                    <TaskCard key={task.id} task={{ ...task, column: column.id }} />
-                  ))}
+                <Column
+                  column={column}
+                  onUpdateName={handleUpdateColumnName}
+                  onDelete={handleDeleteColumn}
+                />
+
+                <SortableContext
+                  items={column.tasks.map(task => `task:${column.id}:${task.id}`)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="tasks-scroll-area">
+                    {column.tasks.map(task => (
+                      <TaskCard key={task.id} task={{ ...task, column: column.id }} />
+                    ))}
+                  </div>
+                </SortableContext>
+
+                <div className="add-task-fixed">
                   <AddTaskToggle columnId={column.id} onAddTask={handleAddTask} />
                 </div>
-              </SortableContext>
+              </div>
             </div>
           ))}
         </SortableContext>

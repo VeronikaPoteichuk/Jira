@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -7,13 +7,7 @@ const Column = ({ column, isDragging, onUpdateName, onDelete }) => {
   const [editedName, setEditedName] = useState(column.name || "");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition
-} = useSortable({
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: `column:${column.id}`,
   });
 
@@ -22,9 +16,28 @@ const Column = ({ column, isDragging, onUpdateName, onDelete }) => {
     transition,
   };
 
+  const editRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = e => {
+      if (isEditing && editRef.current && !editRef.current.contains(e.target)) {
+        if (column.isNew) {
+          onDelete(column.id);
+        } else {
+          setIsEditing(false);
+          setEditedName(column.name);
+        }
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isEditing, column, onDelete]);
+
   const handleSave = async () => {
     const success = await onUpdateName(column.id, editedName);
     if (success) {
+      column.isNew = false;
       setIsEditing(false);
     }
   };
@@ -44,7 +57,7 @@ const Column = ({ column, isDragging, onUpdateName, onDelete }) => {
     >
       <div className="column-header">
         {isEditing ? (
-          <div className="edit-column-name">
+          <div ref={editRef} className="edit-column-name">
             <input
               type="text"
               value={editedName}
@@ -52,15 +65,28 @@ const Column = ({ column, isDragging, onUpdateName, onDelete }) => {
               autoFocus
             />
             <div className="edit-buttons">
-              <button onClick={handleSave} className="edit-btn confirm-btn">
-                &#10004;
-              </button>
-              <button onClick={handleCancel} className="edit-btn cancel-btn">
-                &#10008;
-              </button>
-              <button className="delete-column-btn" onClick={() => setShowDeleteModal(true)}>
-                &#128465;
-              </button>
+              {column.isNew ? (
+                <>
+                  <button onClick={handleSave} className="edit-btn confirm-btn">
+                    Create
+                  </button>
+                  <button onClick={() => onDelete(column.id)} className="edit-btn cancel-btn">
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button onClick={handleSave} className="edit-btn confirm-btn">
+                    &#10004;
+                  </button>
+                  <button onClick={handleCancel} className="edit-btn cancel-btn">
+                    &#10008;
+                  </button>
+                  <button className="delete-column-btn" onClick={() => setShowDeleteModal(true)}>
+                    &#128465;
+                  </button>
+                </>
+              )}
             </div>
           </div>
         ) : (
