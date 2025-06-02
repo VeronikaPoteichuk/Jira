@@ -5,7 +5,7 @@ const UserForm = ({ user, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
-    password: ""
+    password: "",
   });
 
   useEffect(() => {
@@ -13,16 +13,16 @@ const UserForm = ({ user, onSave, onCancel }) => {
       setFormData({
         username: user.username || "",
         email: user.email || "",
-        password: ""
+        password: "",
       });
     }
   }, [user]);
 
-  const onChange = (e) => {
+  const onChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = e => {
     e.preventDefault();
     onSave(formData);
   };
@@ -72,8 +72,12 @@ const UserForm = ({ user, onSave, onCancel }) => {
           />
         </FormGroup>
       )}
-      <Button color="primary" type="submit">Save</Button>{" "}
-      <Button color="secondary" onClick={onCancel}>Cancel</Button>
+      <Button color="primary" type="submit">
+        Save
+      </Button>
+      <Button color="secondary" onClick={onCancel}>
+        Cancel
+      </Button>
     </Form>
   );
 };
