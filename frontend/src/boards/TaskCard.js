@@ -54,7 +54,7 @@ const TaskCard = ({ task, onDelete }) => {
       style={style}
       {...attributes}
       {...(isEditing ? {} : listeners)}
-      className="task-card"
+      className="task-card hover-group"
       data-dragging={isDragging}
     >
       <div className="task-top-bar">
@@ -64,8 +64,8 @@ const TaskCard = ({ task, onDelete }) => {
           </button>
         )}
         {menuOpen && (
-          <div className="task-menu">
-            <button onClick={() => setShowDeleteModal(true)}>Удалить</button>
+          <div className="task-menu" >
+            <button onClick={() => setShowDeleteModal(true)} onKeyDown={handleKeyDown}>Delete</button>
           </div>
         )}
       </div>
@@ -94,7 +94,7 @@ const TaskCard = ({ task, onDelete }) => {
         <div className="task-display" onClick={() => setIsEditing(true)}>
           <span>{title}</span>
           <button
-            className="edit-button"
+            className="edit-button show-on-hover"
             onClick={e => {
               e.stopPropagation();
               setIsEditing(true);
@@ -114,10 +114,10 @@ const TaskCard = ({ task, onDelete }) => {
           <div className="modal-contentt">
             <p4 className="modal-title-text">Delete task?</p4>
             <p className="modal-description">
-              Are you sure you want to delete this task? This action cannot be undone.
+              Are you sure you want to delete task {task.title}? This action cannot be undone.
             </p>
             <div className="modal-buttons">
-              <button className="cancel-button" onClick={() => setShowDeleteModal(true)}>
+              <button className="cancel-button" onClick={() => setShowDeleteModal(false)}>
                 Cancel
               </button>
               <button

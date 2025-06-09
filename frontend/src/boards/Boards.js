@@ -158,15 +158,6 @@ const Board = () => {
     }
   };
 
-  // const handleDeleteTask = async taskId => {
-  //   try {
-  //     await axiosInstance.delete(`/api/tasks/${taskId}/`);
-  //     setTasks(tasks.filter(task => task.id !== taskId));
-  //   } catch (error) {
-  //     console.error("Error deleting task:", error);
-  //   }
-  // };
-
   const handleAddTask = async (columnId, title) => {
     try {
       const column = columns.find(col => col.id === columnId);
