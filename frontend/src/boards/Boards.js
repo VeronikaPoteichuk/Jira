@@ -19,13 +19,15 @@ import {
 import Column from "./Column";
 import TaskCard from "./TaskCard";
 import AddTaskToggle from "./AddTaskToggle";
+import EditTaskModal from "./EditTaskModal";
 import "./style.css";
 
 const Board = () => {
   const [columns, setColumns] = useState([]);
-  // const [tasks, setTasks] = useState([]);
   const [activeTask, setActiveTask] = useState(null);
   const [activeColumn, setActiveColumn] = useState(null);
+  const [editingTask, setEditingTask] = useState(null);
+  const [editingTaskId, setEditingTaskId] = useState(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -181,100 +183,155 @@ const Board = () => {
     }
   };
 
+  const handleUpdateTask = updatedTask => {
+    setColumns(prevColumns =>
+      prevColumns.map(col => {
+        if (col.id !== updatedTask.column) return col;
+
+        const tasks = col.tasks.map(task =>
+          task.id === updatedTask.id ? updatedTask : task
+        );
+
+        return { ...col, tasks };
+      })
+    );
+  };
+
+
+  const getTaskById = id => {
+    for (const col of columns) {
+      const task = col.tasks.find(t => t.id === id);
+      if (task) return task;
+    }
+    return null;
+  };
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCorners}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="board" style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
-        <SortableContext
-          items={columns.map(col => `column:${col.id}`)}
-          strategy={horizontalListSortingStrategy}
-        >
-          {columns.map(column => (
-            <div className="column-background">
-              <div
-                className="background-columns"
-                key={column.id}
-                style={{
-                  minWidth: 300,
-                  display: "flex",
-                  flexDirection: "column",
-                  maxHeight: "100%",
-                }}
-              >
-                <Column
-                  column={column}
-                  onUpdateName={handleUpdateColumnName}
-                  onDelete={handleDeleteColumn}
-                />
-
-                <SortableContext
-                  items={column.tasks.map(task => `task:${column.id}:${task.id}`)}
-                  strategy={verticalListSortingStrategy}
+    <>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="board" style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
+          <SortableContext
+            items={columns.map(col => `column:${col.id}`)}
+            strategy={horizontalListSortingStrategy}
+          >
+            {columns.map(column => (
+              <div className="column-background">
+                <div
+                  className="background-columns"
+                  key={column.id}
+                  style={{
+                    minWidth: 300,
+                    display: "flex",
+                    flexDirection: "column",
+                    maxHeight: "100%",
+                  }}
                 >
-                  <div className="tasks-scroll-area">
-                    {column.tasks.map(task => (
-                      <TaskCard
-                        key={task.id}
-                        task={{ ...task, column: column.id }}
-                        onDelete={async taskId => {
-                          try {
-                            await axiosInstance.delete(`/api/tasks/${taskId}/`);
-                            setColumns(prev =>
-                              prev.map(col =>
-                                col.id === column.id
-                                  ? { ...col, tasks: col.tasks.filter(task => task.id !== taskId) }
-                                  : col,
-                              ),
-                            );
-                          } catch (error) {
-                            console.error("Error deleting task:", error);
-                          }
-                        }}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
+                  <Column
+                    column={column}
+                    onUpdateName={handleUpdateColumnName}
+                    onDelete={handleDeleteColumn}
+                  />
 
-                <div className="add-task-fixed">
-                  <AddTaskToggle columnId={column.id} onAddTask={handleAddTask} />
+                  <SortableContext
+                    items={column.tasks.map(task => `task:${column.id}:${task.id}`)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="tasks-scroll-area">
+                      {column.tasks.map(task => (
+                        <TaskCard
+                          key={task.id}
+                          task={{ ...task, column: column.id }}
+                          onDelete={async taskId => {
+                            try {
+                              await axiosInstance.delete(`/api/tasks/${taskId}/`);
+                              setColumns(prev =>
+                                prev.map(col =>
+                                  col.id === column.id
+                                    ? {
+                                        ...col,
+                                        tasks: col.tasks.filter(task => task.id !== taskId),
+                                      }
+                                    : col,
+                                ),
+                              );
+                            } catch (error) {
+                              console.error("Error deleting task:", error);
+                            }
+                          }}
+                          onClick={taskId => {
+                            const freshTask = getTaskById(taskId);
+                            setEditingTask(freshTask);
+                          }}
+                          onUpdate={handleUpdateTask}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+
+                  <div className="add-task-fixed">
+                    <AddTaskToggle columnId={column.id} onAddTask={handleAddTask} />
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </SortableContext>
-        <button onClick={handleAddColumn} className="add-column-btn">
-          + Add column
-        </button>
-      </div>
+            ))}
+          </SortableContext>
+          <button onClick={handleAddColumn} className="add-column-btn">
+            + Add column
+          </button>
+        </div>
 
-      <DragOverlay>
-        {activeColumn ? (
-          <Column column={activeColumn} onUpdateName={handleUpdateColumnName} isDragging />
-        ) : activeTask ? (
-          <TaskCard
-            task={activeTask}
-            onDelete={async taskId => {
-              try {
-                await axiosInstance.delete(`/api/tasks/${taskId}/`);
-                setColumns(prev =>
-                  prev.map(col =>
-                    col.id === activeTask.column
-                      ? { ...col, tasks: col.tasks.filter(task => task.id !== taskId) }
-                      : col,
-                  ),
-                );
-              } catch (error) {
-                console.error("Error deleting task:", error);
-              }
-            }}
-          />
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+        <DragOverlay>
+          {activeColumn ? (
+            <Column column={activeColumn} onUpdateName={handleUpdateColumnName} isDragging />
+          ) : activeTask ? (
+            <TaskCard
+              task={activeTask}
+              onDelete={async taskId => {
+                try {
+                  await axiosInstance.delete(`/api/tasks/${taskId}/`);
+                  setColumns(prev =>
+                    prev.map(col =>
+                      col.id === activeTask.column
+                        ? { ...col, tasks: col.tasks.filter(task => task.id !== taskId) }
+                        : col,
+                    ),
+                  );
+                } catch (error) {
+                  console.error("Error deleting task:", error);
+                }
+              }}
+            />
+          ) : null}
+        </DragOverlay>
+      </DndContext>
+
+      {editingTask && (
+        <EditTaskModal
+          task={editingTask}
+          onClose={() => setEditingTask(null)}
+          onSave={handleUpdateTask}
+          onDelete={async taskId => {
+            try {
+              await axiosInstance.delete(`/api/tasks/${taskId}/`);
+              setColumns(prev =>
+                prev.map(col =>
+                  col.id === editingTask.column
+                    ? { ...col, tasks: col.tasks.filter(task => task.id !== taskId) }
+                    : col,
+                ),
+              );
+              setEditingTask(null);
+            } catch (error) {
+              console.error("Error deleting task:", error);
+            }
+          }}
+        />
+      )}
+    </>
   );
 };
 

@@ -79,11 +79,7 @@ const ListUsers = () => {
         Add User
       </Button>
 
-      <CreateUserModal
-        isOpen={createModalOpen}
-        toggle={toggleCreateModal}
-        refresh={fetchUsers}
-      />
+      <CreateUserModal isOpen={createModalOpen} toggle={toggleCreateModal} refresh={fetchUsers} />
 
       <EditUserModal
         isOpen={editModalOpen}

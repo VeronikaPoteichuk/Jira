@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Board, Column, Task
+from .models import Board, Column, Task, Comment
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -25,3 +25,12 @@ class BoardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
         fields = "__all__"
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author_username = serializers.CharField(source="author.username", read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ["id", "text", "task", "author_username", "created_at"]
+        read_only_fields = ["created_at", "author_username", "task"]

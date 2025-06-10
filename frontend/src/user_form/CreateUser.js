@@ -38,23 +38,11 @@ const CreateUser = ({ user = null, onSave, onCancel }) => {
     <Form onSubmit={handleSubmit}>
       <FormGroup>
         <Label for="username">Name:</Label>
-        <Input
-          type="text"
-          name="username"
-          onChange={onChange}
-          value={formData.username}
-          required
-        />
+        <Input type="text" name="username" onChange={onChange} value={formData.username} required />
       </FormGroup>
       <FormGroup>
         <Label for="email">Email:</Label>
-        <Input
-          type="email"
-          name="email"
-          onChange={onChange}
-          value={formData.email}
-          required
-        />
+        <Input type="email" name="email" onChange={onChange} value={formData.email} required />
       </FormGroup>
       {!user && (
         <FormGroup>

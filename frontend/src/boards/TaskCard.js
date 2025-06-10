@@ -1,10 +1,10 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import axiosInstance from "../api/axios";
 import { Check, X, Pencil, MoreVertical } from "lucide-react";
 
-const TaskCard = ({ task, onDelete }) => {
+const TaskCard = ({ task, onDelete, onClick, onUpdate }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: `task:${task.column}:${task.id}`,
   });
@@ -12,7 +12,6 @@ const TaskCard = ({ task, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(task.title);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const inputRef = useRef(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -21,12 +20,17 @@ const TaskCard = ({ task, onDelete }) => {
     transition,
   };
 
+  useEffect(() => {
+    setTitle(task.title);
+  }, [task.title]);
+
   const handleSave = async () => {
     const trimmed = title.trim();
     if (!trimmed) return;
 
     try {
-      await axiosInstance.patch(`/api/tasks/${task.id}/`, { title: trimmed });
+      const res = await axiosInstance.patch(`/api/tasks/${task.id}/`, { title: trimmed });
+      if (onUpdate) onUpdate(res.data);
     } catch (error) {
       console.error("Update failed", error);
     }
@@ -56,22 +60,31 @@ const TaskCard = ({ task, onDelete }) => {
       {...(isEditing ? {} : listeners)}
       className="task-card hover-group"
       data-dragging={isDragging}
+      onClick={() => onClick(task.id)}
     >
-      <div className="task-top-bar">
+      <div className="task-top-bar" onClick={() => onClick(task)}>
         {!isEditing && (
-          <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)}>
+          <button
+            className="menu-button"
+            onClick={e => {
+              e.stopPropagation();
+              setMenuOpen(!menuOpen);
+            }}
+          >
             <MoreVertical size={16} />
           </button>
         )}
         {menuOpen && (
-          <div className="task-menu" >
-            <button onClick={() => setShowDeleteModal(true)} onKeyDown={handleKeyDown}>Delete</button>
+          <div className="task-menu">
+            <button onClick={() => setShowDeleteModal(true)} onKeyDown={handleKeyDown}>
+              Delete
+            </button>
           </div>
         )}
       </div>
 
       {isEditing ? (
-        <div className="edit-form">
+        <div className="edit-form" onClick={e => e.stopPropagation()}>
           <textarea
             ref={inputRef}
             className="edit-input"
@@ -91,20 +104,25 @@ const TaskCard = ({ task, onDelete }) => {
           </div>
         </div>
       ) : (
-        <div className="task-display" onClick={() => setIsEditing(true)}>
+        <div
+          className="task-display"
+          onClick={e => {
+            e.stopPropagation();
+            setIsEditing(true);
+          }}
+        >
           <span>{title}</span>
           <button
             className="edit-button show-on-hover"
-            onClick={e => {
-              e.stopPropagation();
-              setIsEditing(true);
-            }}
+            // onClick={(e) => {
+            //   e.stopPropagation();
+            //   setIsEditing(true);
+            // }}
           >
             <Pencil size={16} />
           </button>
         </div>
       )}
-
       <div className="task-meta">
         <input type="checkbox" defaultChecked />
         <span className="task-id">board_name-{task.id}</span>

@@ -1,6 +1,11 @@
 from adrf.viewsets import ModelViewSet
-from .models import Board, Column, Task
-from .serializers import BoardSerializer, ColumnSerializer, TaskSerializer
+from .models import Board, Column, Task, Comment
+from .serializers import (
+    BoardSerializer,
+    ColumnSerializer,
+    TaskSerializer,
+    CommentSerializer,
+)
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -39,3 +44,14 @@ class TaskViewSet(ModelViewSet):
                 order=item["order"], column_id=item["column"]
             )
         return Response(status=204)
+
+
+class CommentViewSet(ModelViewSet):
+    serializer_class = CommentSerializer
+
+    def get_queryset(self):
+        task_id = self.kwargs.get("task_pk")
+        return Comment.objects.filter(task_id=task_id)
+
+    def perform_create(self, serializer):
+        serializer.save(task_id=self.kwargs["task_pk"], author=self.request.user)
