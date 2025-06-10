@@ -157,14 +157,14 @@ header {
   text-align: -webkit-center;
 }
 
-p {
+.line {
   display: flex;
   flex-direction: row;
   text-align: 1.2;
 }
 
-p:before,
-p:after {
+.line:before,
+.line:after {
   content: "";
   flex: 1 1;
   border-bottom: 2px solid rgb(231, 231, 231);

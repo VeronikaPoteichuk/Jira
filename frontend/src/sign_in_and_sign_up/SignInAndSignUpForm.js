@@ -139,7 +139,10 @@ const AuthFormContent = () => {
             </button>
 
             <div className="login-with">
-              <p style={{ marginBottom: "20px" }}> OR </p>
+              <div className="line" style={{ marginBottom: "20px" }}>
+                {" "}
+                OR{" "}
+              </div>
 
               <button
                 onClick={() => loginWithGoogle()}

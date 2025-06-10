@@ -188,15 +188,12 @@ const Board = () => {
       prevColumns.map(col => {
         if (col.id !== updatedTask.column) return col;
 
-        const tasks = col.tasks.map(task =>
-          task.id === updatedTask.id ? updatedTask : task
-        );
+        const tasks = col.tasks.map(task => (task.id === updatedTask.id ? updatedTask : task));
 
         return { ...col, tasks };
-      })
+      }),
     );
   };
-
 
   const getTaskById = id => {
     for (const col of columns) {
