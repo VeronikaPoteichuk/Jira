@@ -61,7 +61,7 @@ export default function CommentEditor({ onSubmit }) {
 </div>
 
       <div className="save-comment-button">
-        <button onClick={handleSubmit}>Сохранить</button>
+        <button onClick={handleSubmit}>Send</button>
       </div>
     </div>
   );

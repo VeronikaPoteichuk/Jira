@@ -15,8 +15,8 @@ class ColumnSerializer(serializers.ModelSerializer):
         model = Column
         fields = "__all__"
 
-    def validate_name(self, value):
-        return value
+    # def validate_name(self, value):
+    #     return value
 
 
 class BoardSerializer(serializers.ModelSerializer):
