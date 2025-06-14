@@ -6,10 +6,10 @@ import CreateUser from "../user_form/CreateUser";
 const CreateUserModal = ({ isOpen, toggle, refresh }) => {
   const [error, setError] = useState(null);
 
-  const handleSave = async (formData) => {
+  const handleSave = async formData => {
     try {
       await axios.post("/users/", formData);
-      setError(null); // сбрасываем ошибки
+      setError(null);
       refresh();
       toggle();
     } catch (error) {
@@ -30,6 +30,5 @@ const CreateUserModal = ({ isOpen, toggle, refresh }) => {
     </Modal>
   );
 };
-
 
 export default CreateUserModal;
