@@ -1,7 +1,7 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import React from "react";
 import StarterKit from "@tiptap/starter-kit";
-import Placeholder from '@tiptap/extension-placeholder'
+import Placeholder from "@tiptap/extension-placeholder";
 import {
   Bold,
   Italic,
@@ -19,13 +19,10 @@ import {
 import clsx from "clsx";
 
 export default function CommentEditor({ onSubmit }) {
-    const editor = useEditor({
-        extensions: [
-          StarterKit,
-          Placeholder.configure({ placeholder: 'Write something …' }),
-        ],
-        content: null,
-      });
+  const editor = useEditor({
+    extensions: [StarterKit, Placeholder.configure({ placeholder: "Write something …" })],
+    content: null,
+  });
 
   const handleSubmit = () => {
     if (editor) {
@@ -57,8 +54,8 @@ export default function CommentEditor({ onSubmit }) {
       </div>
 
       <div className="comments-editor">
-  <EditorContent editor={editor} />
-</div>
+        <EditorContent editor={editor} />
+      </div>
 
       <div className="save-comment-button">
         <button onClick={handleSubmit}>Send</button>

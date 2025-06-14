@@ -76,7 +76,13 @@ const TaskCard = ({ task, onDelete, onClick, onUpdate }) => {
         )}
         {menuOpen && (
           <div className="task-menu">
-            <button onClick={(e) => {setShowDeleteModal(true); e.stopPropagation() }} onKeyDown={handleKeyDown}>
+            <button
+              onClick={e => {
+                setShowDeleteModal(true);
+                e.stopPropagation();
+              }}
+              onKeyDown={handleKeyDown}
+            >
               Delete
             </button>
           </div>
@@ -111,25 +117,27 @@ const TaskCard = ({ task, onDelete, onClick, onUpdate }) => {
             setIsEditing(true);
           }}
         >
-          <span>{title}</span>
-          <button
-            className="edit-button show-on-hover"
-            // onClick={(e) => {
-            //   e.stopPropagation();
-            //   setIsEditing(true);
-            // }}
-          >
-            <Pencil size={16} />
-          </button>
+          <div className="task-display-content">
+            <span>{title}</span>
+            <button
+              className="edit-button"
+              onClick={e => {
+                e.stopPropagation();
+                setIsEditing(true);
+              }}
+            >
+              <Pencil size={16} />
+            </button>
+          </div>
         </div>
       )}
       <div className="task-meta">
-        <input type="checkbox" defaultChecked onClick={(e) => e.stopPropagation()} />
+        <input type="checkbox" defaultChecked onClick={e => e.stopPropagation()} />
         <span className="task-id">board_name-{task.id}</span>
       </div>
       {showDeleteModal && (
-        <div className="modal-overlay" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-contentt" >
+        <div className="modal-overlay" onClick={e => e.stopPropagation()}>
+          <div className="modal-contentt">
             <p4 className="modal-title-text">Delete task?</p4>
             <p className="modal-description">
               Are you sure you want to delete task {task.title}? This action cannot be undone.

@@ -151,15 +151,15 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
                       <p>Loading comments...</p>
                     ) : (
                       <>
-                      <div className="comments-scroll">
-                        <div className="comments-list">
-                          {comments.length === 0 && <p>There are no comments yet.</p>}
-                          {comments.map(c => (
-                            <div key={c.id} className="comment-item">
-                              <strong>{c.author_username}:</strong> {c.text}
-                            </div>
-                          ))}
-                        </div>
+                        <div className="comments-scroll">
+                          <div className="comments-list">
+                            {comments.length === 0 && <p>There are no comments yet.</p>}
+                            {comments.map(c => (
+                              <div key={c.id} className="comment-item">
+                                <strong>{c.author_username}:</strong> {c.text}
+                              </div>
+                            ))}
+                          </div>
                         </div>
                         <div className="comment-input-section">
                           <CommentEditor

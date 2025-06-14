@@ -66,7 +66,7 @@ const AuthFormContent = () => {
       });
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
-      navigate("/board");
+      navigate("/project-page");
     } catch (error) {
       console.error(error);
       alert("Login failed");
@@ -91,7 +91,7 @@ const AuthFormContent = () => {
         const data = await res.json();
         localStorage.setItem("access", data.access);
         localStorage.setItem("refresh", data.refresh);
-        navigate("/board");
+        navigate("/project-page");
       }
     },
     onError: () => console.error("Google login error"),

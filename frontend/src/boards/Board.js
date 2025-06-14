@@ -21,13 +21,14 @@ import TaskCard from "./TaskCard";
 import AddTaskToggle from "./AddTaskToggle";
 import EditTaskModal from "./EditTaskModal";
 import "./style.css";
+import { Search, X } from "lucide-react";
 
 const Board = () => {
   const [columns, setColumns] = useState([]);
   const [activeTask, setActiveTask] = useState(null);
   const [activeColumn, setActiveColumn] = useState(null);
   const [editingTask, setEditingTask] = useState(null);
-  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -202,6 +203,10 @@ const Board = () => {
     }
     return null;
   };
+
+  const filterTasks = tasks =>
+    tasks.filter(task => task.title.toLowerCase().includes(searchTerm.toLowerCase()));
+
   return (
     <>
       <DndContext
@@ -210,6 +215,26 @@ const Board = () => {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
+        <div className="search-container">
+          <Search className="search-icon" size={16} />
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search for task..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
+          {searchTerm && (
+            <button
+              className="clear-button"
+              onClick={() => setSearchTerm("")}
+              aria-label="Clear search"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+
         <div className="board" style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
           <SortableContext
             items={columns.map(col => `column:${col.id}`)}
@@ -238,7 +263,7 @@ const Board = () => {
                     strategy={verticalListSortingStrategy}
                   >
                     <div className="tasks-scroll-area">
-                      {column.tasks.map(task => (
+                      {filterTasks(column.tasks).map(task => (
                         <TaskCard
                           key={task.id}
                           task={{ ...task, column: column.id }}
