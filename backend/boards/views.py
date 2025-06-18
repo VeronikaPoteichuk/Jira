@@ -37,6 +37,9 @@ class TaskViewSet(ModelViewSet):
     def get_queryset(self):
         return Task.objects.filter(column__board__project__created_by=self.request.user)
 
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
     @action(detail=False, methods=["post"])
     def reorder(self, request):
         for item in request.data.get("tasks", []):

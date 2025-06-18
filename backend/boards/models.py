@@ -27,7 +27,15 @@ class Task(models.Model):
     assignee = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
     )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="created_tasks",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     order = models.PositiveIntegerField(default=0)
 
     class Meta:

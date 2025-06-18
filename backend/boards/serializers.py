@@ -3,9 +3,22 @@ from .models import Board, Column, Task, Comment
 
 
 class TaskSerializer(serializers.ModelSerializer):
+    column = serializers.SerializerMethodField()
+    author_username = serializers.CharField(source="author.username", read_only=True)
+    project_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Task
         fields = "__all__"
+
+    def get_column(self, obj):
+        return {"id": obj.column.id, "name": obj.column.name} if obj.column else None
+
+    def get_project_name(self, obj):
+        try:
+            return obj.column.board.project.name
+        except AttributeError:
+            return None
 
 
 class ColumnSerializer(serializers.ModelSerializer):
@@ -14,9 +27,6 @@ class ColumnSerializer(serializers.ModelSerializer):
     class Meta:
         model = Column
         fields = "__all__"
-
-    # def validate_name(self, value):
-    #     return value
 
 
 class BoardSerializer(serializers.ModelSerializer):
