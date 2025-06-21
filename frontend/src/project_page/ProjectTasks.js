@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  useState,
-  useMemo,
-  useRef,
-  useCallback,
-} from "react";
+import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import axiosInstance from "../api/axios";
 import { Search, X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import EditTaskModal from "../boards/EditTaskModal";
@@ -30,9 +24,7 @@ const ProjectTasks = ({ projectId }) => {
 
   const fetchTasks = useCallback(async () => {
     try {
-      const response = await axiosInstance.get(
-        `/api/tasks/?project=${projectId}`,
-      );
+      const response = await axiosInstance.get(`/api/tasks/?project=${projectId}`);
       setTasks(response.data);
     } catch (error) {
       console.error("Error loading tasks:", error);
@@ -40,7 +32,7 @@ const ProjectTasks = ({ projectId }) => {
   }, [projectId]);
 
   useEffect(() => {
-    axiosInstance.get("/api/boards/1/").then((res) => {
+    axiosInstance.get("/api/boards/1/").then(res => {
       setColumns(res.data.columns);
     });
   }, []);
@@ -49,23 +41,21 @@ const ProjectTasks = ({ projectId }) => {
     fetchTasks();
   }, [fetchTasks]);
 
-  const handleTitleClick = (task) => {
+  const handleTitleClick = task => {
     setEditingTaskId(task.id);
     setEditingTitle(task.title);
   };
 
-  const handleTitleChange = (e) => {
+  const handleTitleChange = e => {
     setEditingTitle(e.target.value);
   };
 
-  const handleTitleBlur = async (taskId) => {
+  const handleTitleBlur = async taskId => {
     try {
       await axiosInstance.patch(`/api/tasks/${taskId}/`, {
         title: editingTitle,
       });
-      setTasks((prev) =>
-        prev.map((t) => (t.id === taskId ? { ...t, title: editingTitle } : t)),
-      );
+      setTasks(prev => prev.map(t => (t.id === taskId ? { ...t, title: editingTitle } : t)));
     } catch (error) {
       console.error("Error updating title:", error);
     }
@@ -74,9 +64,7 @@ const ProjectTasks = ({ projectId }) => {
   };
 
   const sortedFilteredTasks = useMemo(() => {
-    let filtered = tasks.filter((t) =>
-      t.title.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
+    let filtered = tasks.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()));
 
     filtered.sort((a, b) => {
       const { key, direction } = sortConfig;
@@ -91,9 +79,7 @@ const ProjectTasks = ({ projectId }) => {
       const aStr = (aVal ?? "").toString();
       const bStr = (bVal ?? "").toString();
 
-      return direction === "asc"
-        ? aStr.localeCompare(bStr)
-        : bStr.localeCompare(aStr);
+      return direction === "asc" ? aStr.localeCompare(bStr) : bStr.localeCompare(aStr);
     });
 
     return filtered;
@@ -110,8 +96,8 @@ const ProjectTasks = ({ projectId }) => {
 
   const totalPages = Math.ceil(sortedFilteredTasks.length / ITEMS_PER_PAGE);
 
-  const requestSort = (key) => {
-    setSortConfig((prev) => ({
+  const requestSort = key => {
+    setSortConfig(prev => ({
       key,
       direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
     }));
@@ -121,12 +107,12 @@ const ProjectTasks = ({ projectId }) => {
     if (viewMode !== "infinite") return;
 
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         if (
           entries[0].isIntersecting &&
           currentPage * ITEMS_PER_PAGE < sortedFilteredTasks.length
         ) {
-          setCurrentPage((prev) => prev + 1);
+          setCurrentPage(prev => prev + 1);
         }
       },
       {
@@ -147,12 +133,12 @@ const ProjectTasks = ({ projectId }) => {
     };
   }, [currentPage, sortedFilteredTasks.length, viewMode]);
 
-  const handleViewModeChange = (e) => {
+  const handleViewModeChange = e => {
     setViewMode(e.target.value);
     setCurrentPage(1);
   };
 
-  const openTaskModal = (task) => {
+  const openTaskModal = task => {
     setSelectedTask(task);
   };
 
@@ -162,7 +148,7 @@ const ProjectTasks = ({ projectId }) => {
 
   const handleAddTask = async (columnId, title) => {
     try {
-      const column = columns.find((col) => col.id === columnId);
+      const column = columns.find(col => col.id === columnId);
       const order = column.tasks.length;
 
       const response = await axiosInstance.post("/api/tasks/", {
@@ -176,39 +162,30 @@ const ProjectTasks = ({ projectId }) => {
         console.error("No columnId provided to AddTaskToggle");
         return;
       }
-      setColumns((columns) =>
-        columns.map((col) =>
-          col.id === columnId
-            ? { ...col, tasks: [...col.tasks, newTask] }
-            : col,
+      setColumns(columns =>
+        columns.map(col =>
+          col.id === columnId ? { ...col, tasks: [...col.tasks, newTask] } : col,
         ),
       );
 
-      setTasks((prev) => [...prev, newTask]);
+      setTasks(prev => [...prev, newTask]);
     } catch (error) {
-      console.error(
-        "Error adding task:",
-        error.response?.data || error.message,
-      );
+      console.error("Error adding task:", error.response?.data || error.message);
     }
   };
 
-  const handleTaskSave = (updatedTask) => {
-    setColumns((prevColumns) =>
-      prevColumns.map((col) => {
+  const handleTaskSave = updatedTask => {
+    setColumns(prevColumns =>
+      prevColumns.map(col => {
         if (col.id !== updatedTask.column) return col;
 
-        const tasks = col.tasks.map((task) =>
-          task.id === updatedTask.id ? updatedTask : task,
-        );
+        const tasks = col.tasks.map(task => (task.id === updatedTask.id ? updatedTask : task));
 
         return { ...col, tasks };
       }),
     );
 
-    setTasks((prev) =>
-      prev.map((task) => (task.id === updatedTask.id ? updatedTask : task)),
-    );
+    setTasks(prev => prev.map(task => (task.id === updatedTask.id ? updatedTask : task)));
   };
 
   const SortIndicator = ({ columnKey, sortConfig }) => {
@@ -234,7 +211,7 @@ const ProjectTasks = ({ projectId }) => {
             type="text"
             placeholder="Search task..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             className="task-search-input"
           />
           {searchQuery && (
@@ -268,45 +245,28 @@ const ProjectTasks = ({ projectId }) => {
                 <th>Status</th>
                 <th onClick={() => requestSort("created_at")}>
                   Created by
-                  <SortIndicator
-                    columnKey="created_at"
-                    sortConfig={sortConfig}
-                  />
+                  <SortIndicator columnKey="created_at" sortConfig={sortConfig} />
                 </th>
                 <th onClick={() => requestSort("updated_at")}>
                   Date of update
-                  <SortIndicator
-                    columnKey="updated_at"
-                    sortConfig={sortConfig}
-                  />
+                  <SortIndicator columnKey="updated_at" sortConfig={sortConfig} />
                 </th>
                 <th onClick={() => requestSort("author_username")}>
                   Author
-                  <SortIndicator
-                    columnKey="author_username"
-                    sortConfig={sortConfig}
-                  />
+                  <SortIndicator columnKey="author_username" sortConfig={sortConfig} />
                 </th>
               </tr>
             </thead>
 
             <tbody>
-              {paginatedTasks.map((task) => (
+              {paginatedTasks.map(task => (
                 <tr key={task.id}>
                   <td>
-                    <button
-                      className="task-key-button"
-                      onClick={() => openTaskModal(task)}
-                    >
-                      {task.project_name && task.id
-                        ? `${task.project_name}-${task.id}`
-                        : ""}
+                    <button className="task-key-button" onClick={() => openTaskModal(task)}>
+                      {task.project_name && task.id ? `${task.project_name}-${task.id}` : ""}
                     </button>
                   </td>
-                  <td
-                    onClick={() => handleTitleClick(task)}
-                    className="clickable-cell"
-                  >
+                  <td onClick={() => handleTitleClick(task)} className="clickable-cell">
                     {editingTaskId === task.id ? (
                       <input
                         type="text"
@@ -343,7 +303,7 @@ const ProjectTasks = ({ projectId }) => {
           <button
             className="pagination-button"
             disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => p - 1)}
+            onClick={() => setCurrentPage(p => p - 1)}
           >
             Back
           </button>
@@ -353,18 +313,14 @@ const ProjectTasks = ({ projectId }) => {
           <button
             className="pagination-button"
             disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((p) => p + 1)}
+            onClick={() => setCurrentPage(p => p + 1)}
           >
             Next
           </button>
         </div>
       )}
       {selectedTask && (
-        <EditTaskModal
-          task={selectedTask}
-          onClose={closeTaskModal}
-          onSave={handleTaskSave}
-        />
+        <EditTaskModal task={selectedTask} onClose={closeTaskModal} onSave={handleTaskSave} />
       )}
     </div>
   );

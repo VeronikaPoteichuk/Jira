@@ -40,41 +40,35 @@ const Board = () => {
   );
 
   useEffect(() => {
-    axiosInstance.get("/api/boards/1/").then((res) => {
+    axiosInstance.get("/api/boards/1/").then(res => {
       setColumns(res.data.columns);
     });
   }, []);
 
-  const handleDragStart = (event) => {
+  const handleDragStart = event => {
     const { active } = event;
     const [type, columnId, taskId] = active.id.toString().split(":");
 
     if (type === "column") {
-      const column = columns.find((col) => col.id === parseInt(columnId));
+      const column = columns.find(col => col.id === parseInt(columnId));
       setActiveColumn(column);
     } else {
-      const sourceColumn = columns.find((col) => col.id === parseInt(columnId));
-      const task = sourceColumn.tasks.find((t) => t.id === parseInt(taskId));
+      const sourceColumn = columns.find(col => col.id === parseInt(columnId));
+      const task = sourceColumn.tasks.find(t => t.id === parseInt(taskId));
       setActiveTask(task);
     }
   };
 
-  const handleDragEnd = async (event) => {
+  const handleDragEnd = async event => {
     const { active, over } = event;
     if (!over) return;
 
-    const [activeType, activeColumnId, activeTaskId] = active.id
-      .toString()
-      .split(":");
+    const [activeType, activeColumnId, activeTaskId] = active.id.toString().split(":");
     const [overType, overColumnId, overTaskId] = over.id.toString().split(":");
 
     if (activeType === "column" && overType === "column") {
-      const oldIndex = columns.findIndex(
-        (col) => col.id === parseInt(activeColumnId),
-      );
-      const newIndex = columns.findIndex(
-        (col) => col.id === parseInt(overColumnId),
-      );
+      const oldIndex = columns.findIndex(col => col.id === parseInt(activeColumnId));
+      const newIndex = columns.findIndex(col => col.id === parseInt(overColumnId));
 
       if (oldIndex !== newIndex) {
         const newColumns = arrayMove(columns, oldIndex, newIndex);
@@ -92,18 +86,12 @@ const Board = () => {
     }
 
     const newColumns = [...columns];
-    const sourceColumn = newColumns.find(
-      (col) => col.id === parseInt(activeColumnId),
-    );
-    const targetColumn = newColumns.find(
-      (col) => col.id === parseInt(overColumnId),
-    );
+    const sourceColumn = newColumns.find(col => col.id === parseInt(activeColumnId));
+    const targetColumn = newColumns.find(col => col.id === parseInt(overColumnId));
 
     if (!sourceColumn || !targetColumn) return;
 
-    const taskIndex = sourceColumn.tasks.findIndex(
-      (task) => task.id === parseInt(activeTaskId),
-    );
+    const taskIndex = sourceColumn.tasks.findIndex(task => task.id === parseInt(activeTaskId));
     if (taskIndex === -1) return;
 
     const [movedTask] = sourceColumn.tasks.splice(taskIndex, 1);
@@ -112,9 +100,7 @@ const Board = () => {
     if (overTaskId === "placeholder") {
       targetColumn.tasks.push(movedTask);
     } else {
-      const targetIndex = targetColumn.tasks.findIndex(
-        (task) => task.id === parseInt(overTaskId),
-      );
+      const targetIndex = targetColumn.tasks.findIndex(task => task.id === parseInt(overTaskId));
       if (targetIndex === -1) {
         targetColumn.tasks.push(movedTask);
       } else {
@@ -126,7 +112,7 @@ const Board = () => {
     setActiveTask(null);
 
     await axiosInstance.post("/api/tasks/reorder/", {
-      tasks: newColumns.flatMap((col) =>
+      tasks: newColumns.flatMap(col =>
         col.tasks.map((task, index) => ({
           id: task.id,
           order: index,
@@ -139,11 +125,7 @@ const Board = () => {
   const handleUpdateColumnName = async (columnId, newName) => {
     try {
       await axiosInstance.patch(`/api/columns/${columnId}/`, { name: newName });
-      setColumns(
-        columns.map((col) =>
-          col.id === columnId ? { ...col, name: newName } : col,
-        ),
-      );
+      setColumns(columns.map(col => (col.id === columnId ? { ...col, name: newName } : col)));
       return true;
     } catch (error) {
       console.error("Failed to update column name:", error);
@@ -159,7 +141,7 @@ const Board = () => {
         order: columns.length,
       });
 
-      setColumns((prev) => [
+      setColumns(prev => [
         ...prev,
         {
           ...res.data,
@@ -168,17 +150,14 @@ const Board = () => {
         },
       ]);
     } catch (error) {
-      console.error(
-        "Error adding column:",
-        error.response?.data || error.message,
-      );
+      console.error("Error adding column:", error.response?.data || error.message);
     }
   };
 
-  const handleDeleteColumn = async (columnId) => {
+  const handleDeleteColumn = async columnId => {
     try {
       await axiosInstance.delete(`/api/columns/${columnId}/`);
-      setColumns(columns.filter((col) => col.id !== columnId));
+      setColumns(columns.filter(col => col.id !== columnId));
     } catch (error) {
       console.error("Error deleting column:", error);
     }
@@ -186,7 +165,7 @@ const Board = () => {
 
   const handleAddTask = async (columnId, title) => {
     try {
-      const column = columns.find((col) => col.id === columnId);
+      const column = columns.find(col => col.id === columnId);
       const order = column.tasks.length;
 
       const response = await axiosInstance.post("/api/tasks/", {
@@ -197,47 +176,38 @@ const Board = () => {
 
       const newTask = response.data;
 
-      setColumns((columns) =>
-        columns.map((col) =>
-          col.id === columnId
-            ? { ...col, tasks: [...col.tasks, newTask] }
-            : col,
+      setColumns(columns =>
+        columns.map(col =>
+          col.id === columnId ? { ...col, tasks: [...col.tasks, newTask] } : col,
         ),
       );
     } catch (error) {
-      console.error(
-        "Error adding task:",
-        error.response?.data || error.message,
-      );
+      console.error("Error adding task:", error.response?.data || error.message);
     }
   };
 
-  const handleUpdateTask = (updatedTask) => {
-    setColumns((prevColumns) =>
-      prevColumns.map((col) => {
+  const handleUpdateTask = updatedTask => {
+    setColumns(prevColumns =>
+      prevColumns.map(col => {
         if (col.id !== updatedTask.column) return col;
 
-        const tasks = col.tasks.map((task) =>
-          task.id === updatedTask.id ? updatedTask : task,
-        );
+        const tasks = col.tasks.map(task => (task.id === updatedTask.id ? updatedTask : task));
 
         return { ...col, tasks };
       }),
     );
   };
 
-  const getTaskById = (id) => {
+  const getTaskById = id => {
     for (const col of columns) {
-      const task = col.tasks.find((t) => t.id === id);
+      const task = col.tasks.find(t => t.id === id);
       if (task) return task;
     }
     return null;
   };
 
-  const filterTasks = (tasks) =>
-    tasks.filter((task) =>
-      task.title.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
+  const filterTasks = tasks =>
+    tasks.filter(task => task.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <>
@@ -254,7 +224,7 @@ const Board = () => {
             className="search-input"
             placeholder="Search for task..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
           />
           {searchTerm && (
             <button
@@ -267,15 +237,12 @@ const Board = () => {
           )}
         </div>
 
-        <div
-          className="board"
-          style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}
-        >
+        <div className="board" style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
           <SortableContext
-            items={columns.map((col) => `column:${col.id}`)}
+            items={columns.map(col => `column:${col.id}`)}
             strategy={horizontalListSortingStrategy}
           >
-            {columns.map((column) => (
+            {columns.map(column => (
               <div key={column.id} className="column-background">
                 <div
                   className="background-columns"
@@ -293,29 +260,23 @@ const Board = () => {
                   />
 
                   <SortableContext
-                    items={column.tasks.map(
-                      (task) => `task:${column.id}:${task.id}`,
-                    )}
+                    items={column.tasks.map(task => `task:${column.id}:${task.id}`)}
                     strategy={verticalListSortingStrategy}
                   >
                     <div className="tasks-scroll-area">
-                      {filterTasks(column.tasks).map((task) => (
+                      {filterTasks(column.tasks).map(task => (
                         <TaskCard
                           key={task.id}
                           task={{ ...task, column: column.id }}
-                          onDelete={async (taskId) => {
+                          onDelete={async taskId => {
                             try {
-                              await axiosInstance.delete(
-                                `/api/tasks/${taskId}/`,
-                              );
-                              setColumns((prev) =>
-                                prev.map((col) =>
+                              await axiosInstance.delete(`/api/tasks/${taskId}/`);
+                              setColumns(prev =>
+                                prev.map(col =>
                                   col.id === column.id
                                     ? {
                                         ...col,
-                                        tasks: col.tasks.filter(
-                                          (task) => task.id !== taskId,
-                                        ),
+                                        tasks: col.tasks.filter(task => task.id !== taskId),
                                       }
                                     : col,
                                 ),
@@ -324,7 +285,7 @@ const Board = () => {
                               console.error("Error deleting task:", error);
                             }
                           }}
-                          onClick={(taskId) => {
+                          onClick={taskId => {
                             const freshTask = getTaskById(taskId);
                             setEditingTask(freshTask);
                           }}
@@ -335,10 +296,7 @@ const Board = () => {
                   </SortableContext>
 
                   <div className="add-task-fixed">
-                    <AddTaskToggle
-                      columnId={column.id}
-                      onAddTask={handleAddTask}
-                    />
+                    <AddTaskToggle columnId={column.id} onAddTask={handleAddTask} />
                   </div>
                 </div>
               </div>
@@ -351,25 +309,19 @@ const Board = () => {
 
         <DragOverlay>
           {activeColumn ? (
-            <Column
-              column={activeColumn}
-              onUpdateName={handleUpdateColumnName}
-              isDragging
-            />
+            <Column column={activeColumn} onUpdateName={handleUpdateColumnName} isDragging />
           ) : activeTask ? (
             <TaskCard
               task={activeTask}
-              onDelete={async (taskId) => {
+              onDelete={async taskId => {
                 try {
                   await axiosInstance.delete(`/api/tasks/${taskId}/`);
-                  setColumns((prev) =>
-                    prev.map((col) =>
+                  setColumns(prev =>
+                    prev.map(col =>
                       col.id === activeTask.column
                         ? {
                             ...col,
-                            tasks: col.tasks.filter(
-                              (task) => task.id !== taskId,
-                            ),
+                            tasks: col.tasks.filter(task => task.id !== taskId),
                           }
                         : col,
                     ),
@@ -388,15 +340,15 @@ const Board = () => {
           task={editingTask}
           onClose={() => setEditingTask(null)}
           onSave={handleUpdateTask}
-          onDelete={async (taskId) => {
+          onDelete={async taskId => {
             try {
               await axiosInstance.delete(`/api/tasks/${taskId}/`);
-              setColumns((prev) =>
-                prev.map((col) =>
+              setColumns(prev =>
+                prev.map(col =>
                   col.id === editingTask.column
                     ? {
                         ...col,
-                        tasks: col.tasks.filter((task) => task.id !== taskId),
+                        tasks: col.tasks.filter(task => task.id !== taskId),
                       }
                     : col,
                 ),

@@ -53,7 +53,7 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
     setIsEditingDescription(false);
   };
 
-  const handleDescriptionKeyDown = (e) => {
+  const handleDescriptionKeyDown = e => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSaveDescription();
@@ -95,7 +95,7 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
               <textarea
                 className="edit-task-textarea"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={e => setTitle(e.target.value)}
                 rows={3}
               />
               <div className="description-section">
@@ -105,22 +105,16 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
                     <textarea
                       className="edit-description-textarea"
                       value={editedDescription}
-                      onChange={(e) => setEditedDescription(e.target.value)}
+                      onChange={e => setEditedDescription(e.target.value)}
                       rows={4}
                       onKeyDown={handleDescriptionKeyDown}
                       autoFocus
                     />
                     <div className="edit-desc-actions">
-                      <button
-                        className="action-btn"
-                        onClick={handleSaveDescription}
-                      >
+                      <button className="action-btn" onClick={handleSaveDescription}>
                         <Check size={18} />
                       </button>
-                      <button
-                        className="action-btn"
-                        onClick={handleCancelDescription}
-                      >
+                      <button className="action-btn" onClick={handleCancelDescription}>
                         <X size={18} />
                       </button>
                     </div>
@@ -132,9 +126,7 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
                   >
                     <p>
                       {description || (
-                        <em className="placeholder">
-                          Click to add a description...
-                        </em>
+                        <em className="placeholder">Click to add a description...</em>
                       )}
                     </p>
                   </div>
@@ -142,7 +134,7 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
               </div>
 
               <div className="tabs">
-                {TABS.map((tab) => (
+                {TABS.map(tab => (
                   <button
                     key={tab}
                     className={activeTab === tab ? "active" : ""}
@@ -162,10 +154,8 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
                       <>
                         <div className="comments-scroll">
                           <div className="comments-list">
-                            {comments.length === 0 && (
-                              <p>There are no comments yet.</p>
-                            )}
-                            {comments.map((c) => (
+                            {comments.length === 0 && <p>There are no comments yet.</p>}
+                            {comments.map(c => (
                               <div key={c.id} className="comment-item">
                                 <strong>{c.author_username}:</strong> {c.text}
                               </div>
@@ -174,14 +164,14 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
                         </div>
                         <div className="comment-input-section">
                           <CommentEditor
-                            onSubmit={async (html) => {
+                            onSubmit={async html => {
                               if (!html.trim()) return;
                               try {
                                 const res = await axiosInstance.post(
                                   `/api/tasks/${task.id}/comments/`,
                                   { text: html },
                                 );
-                                setComments((prev) => [...prev, res.data]);
+                                setComments(prev => [...prev, res.data]);
                               } catch (error) {
                                 console.error("Error adding comment:", error);
                               }
@@ -193,12 +183,8 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
                   </>
                 )}
 
-                {activeTab === "History" && (
-                  <p>The change history will be here.</p>
-                )}
-                {activeTab === "Work log" && (
-                  <p>The change history will be here.</p>
-                )}
+                {activeTab === "History" && <p>The change history will be here.</p>}
+                {activeTab === "Work log" && <p>The change history will be here.</p>}
               </div>
 
               <div className="modal-task-buttons">
