@@ -5,19 +5,18 @@ import axios from "axios";
 const ResetPasswordForm = ({ userId, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
   const [passwordMismatch, setPasswordMismatch] = useState(false);
   const [error, setError] = useState(null);
 
-  const onChange = (e) => {
+  const onChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (passwordMismatch) setPasswordMismatch(false);
     if (error) setError(null);
   };
 
-  // Функция для получения CSRF токена
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
@@ -25,7 +24,7 @@ const ResetPasswordForm = ({ userId, onSuccess, onCancel }) => {
       return;
     }
 
-    console.log('userId:', userId); // Логируем userId перед запросом
+    console.log("userId:", userId);
 
     if (!userId) {
       setError("User ID is missing.");
@@ -33,11 +32,11 @@ const ResetPasswordForm = ({ userId, onSuccess, onCancel }) => {
     }
 
     try {
-      const csrfToken = getCsrfToken();  // Получаем CSRF токен
+      const csrfToken = getCsrfToken();
       await axios.patch(
         `/users/${userId}/`,
         { password: formData.password },
-        { headers: { 'X-CSRFToken': csrfToken } }  // Добавляем CSRF токен в заголовок
+        { headers: { "X-CSRFToken": csrfToken } },
       );
       onSuccess();
     } catch (err) {
@@ -59,7 +58,6 @@ const ResetPasswordForm = ({ userId, onSuccess, onCancel }) => {
           required
         />
       </FormGroup>
-
       <FormGroup>
         <Label for="confirmPassword">Repeat password:</Label>
         <Input
@@ -72,11 +70,13 @@ const ResetPasswordForm = ({ userId, onSuccess, onCancel }) => {
         />
         {passwordMismatch && <FormFeedback>Passwords are different</FormFeedback>}
       </FormGroup>
-
       {error && <div className="text-danger mb-2">{error}</div>}
-
-      <Button color="primary" type="submit">Save</Button>{" "}
-      <Button color="secondary" onClick={onCancel}>Cancel</Button>
+      <Button color="primary" type="submit">
+        Save
+      </Button>{" "}
+      <Button color="secondary" onClick={onCancel}>
+        Cancel
+      </Button>
     </Form>
   );
 };
