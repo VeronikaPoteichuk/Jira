@@ -2,10 +2,17 @@ from rest_framework import serializers
 from .models import Board, Column, Task, Comment
 
 
-class TaskSerializer(serializers.ModelSerializer):
+class TaskWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = "__all__"
+
+
+class TaskReadSerializer(serializers.ModelSerializer):
     column = serializers.SerializerMethodField()
     author_username = serializers.CharField(source="author.username", read_only=True)
     project_name = serializers.SerializerMethodField()
+    key = serializers.SerializerMethodField()
 
     class Meta:
         model = Task
@@ -20,9 +27,15 @@ class TaskSerializer(serializers.ModelSerializer):
         except AttributeError:
             return None
 
+    def get_key(self, obj):
+        try:
+            return f"{obj.column.board.project.name}-{obj.id}"
+        except AttributeError:
+            return f"undefined-{obj.id}"
+
 
 class ColumnSerializer(serializers.ModelSerializer):
-    tasks = TaskSerializer(many=True, read_only=True)
+    tasks = TaskReadSerializer(many=True, read_only=True)
 
     class Meta:
         model = Column
