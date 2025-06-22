@@ -59,53 +59,49 @@ const Board = () => {
     }
   };
 
-  const handleDragEnd = async event => {
-    const { active, over } = event;
-    if (!over) return;
+  const moveItem = (array, fromIndex, toIndex) => {
+    const newArray = [...array];
+    const [item] = newArray.splice(fromIndex, 1);
+    newArray.splice(toIndex, 0, item);
+    return newArray;
+  };
 
-    const [activeType, activeColumnId, activeTaskId] = active.id.toString().split(":");
-    const [overType, overColumnId, overTaskId] = over.id.toString().split(":");
+  const reorderColumns = async (activeId, overId) => {
+    const oldIndex = columns.findIndex(col => col.id === parseInt(activeId));
+    const newIndex = columns.findIndex(col => col.id === parseInt(overId));
 
-    if (activeType === "column" && overType === "column") {
-      const oldIndex = columns.findIndex(col => col.id === parseInt(activeColumnId));
-      const newIndex = columns.findIndex(col => col.id === parseInt(overColumnId));
+    if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return;
 
-      if (oldIndex !== newIndex) {
-        const newColumns = arrayMove(columns, oldIndex, newIndex);
-        setColumns(newColumns);
+    const reordered = moveItem(columns, oldIndex, newIndex);
+    setColumns(reordered);
 
-        await axiosInstance.post("/api/columns/reorder/", {
-          columns: newColumns.map((col, index) => ({
-            id: col.id,
-            order: index,
-          })),
-        });
-      }
-      setActiveColumn(null);
-      return;
-    }
+    await axiosInstance.post("/api/columns/reorder/", {
+      columns: reordered.map((col, index) => ({
+        id: col.id,
+        order: index,
+      })),
+    });
+  };
 
+  const reorderTasks = async (active, over) => {
     const newColumns = [...columns];
-    const sourceColumn = newColumns.find(col => col.id === parseInt(activeColumnId));
-    const targetColumn = newColumns.find(col => col.id === parseInt(overColumnId));
 
-    if (!sourceColumn || !targetColumn) return;
+    const sourceCol = newColumns.find(col => col.id === parseInt(active.columnId));
+    const targetCol = newColumns.find(col => col.id === parseInt(over.columnId));
+    if (!sourceCol || !targetCol) return;
 
-    const taskIndex = sourceColumn.tasks.findIndex(task => task.id === parseInt(activeTaskId));
-    if (taskIndex === -1) return;
+    const fromIndex = sourceCol.tasks.findIndex(t => t.id === parseInt(active.taskId));
+    if (fromIndex === -1) return;
 
-    const [movedTask] = sourceColumn.tasks.splice(taskIndex, 1);
-    movedTask.column = targetColumn.id;
+    const [movedTask] = sourceCol.tasks.splice(fromIndex, 1);
+    movedTask.column = targetCol.id;
 
-    if (overTaskId === "placeholder") {
-      targetColumn.tasks.push(movedTask);
+    if (over.taskId === "placeholder") {
+      targetCol.tasks.push(movedTask);
     } else {
-      const targetIndex = targetColumn.tasks.findIndex(task => task.id === parseInt(overTaskId));
-      if (targetIndex === -1) {
-        targetColumn.tasks.push(movedTask);
-      } else {
-        targetColumn.tasks.splice(targetIndex, 0, movedTask);
-      }
+      const toIndex = targetCol.tasks.findIndex(t => t.id === parseInt(over.taskId));
+      const insertIndex = toIndex === -1 ? targetCol.tasks.length : toIndex;
+      targetCol.tasks.splice(insertIndex, 0, movedTask);
     }
 
     setColumns(newColumns);
@@ -120,6 +116,25 @@ const Board = () => {
         })),
       ),
     });
+  };
+
+  const handleDragEnd = async event => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const [activeType, activeColId, activeTaskId] = active.id.toString().split(":");
+    const [overType, overColId, overTaskId] = over.id.toString().split(":");
+
+    if (activeType === "column" && overType === "column") {
+      await reorderColumns(activeColId, overColId);
+      setActiveColumn(null);
+      return;
+    }
+
+    await reorderTasks(
+      { columnId: activeColId, taskId: activeTaskId },
+      { columnId: overColId, taskId: overTaskId },
+    );
   };
 
   const handleUpdateColumnName = async (columnId, newName) => {
@@ -209,6 +224,32 @@ const Board = () => {
   const filterTasks = tasks =>
     tasks.filter(task => task.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
+  const handleDeleteTask = async (taskId, columnId) => {
+    try {
+      await axiosInstance.delete(`/api/tasks/${taskId}/`);
+      setColumns(prev =>
+        prev.map(col =>
+          col.id === columnId
+            ? {
+                ...col,
+                tasks: col.tasks.filter(task => task.id !== taskId),
+              }
+            : col,
+        ),
+      );
+
+      if (editingTask?.id === taskId) {
+        setEditingTask(null);
+      }
+
+      if (activeTask?.id === taskId) {
+        setActiveTask(null);
+      }
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
+  };
+
   return (
     <>
       <DndContext
@@ -268,23 +309,7 @@ const Board = () => {
                         <TaskCard
                           key={task.id}
                           task={{ ...task, column: column.id }}
-                          onDelete={async taskId => {
-                            try {
-                              await axiosInstance.delete(`/api/tasks/${taskId}/`);
-                              setColumns(prev =>
-                                prev.map(col =>
-                                  col.id === column.id
-                                    ? {
-                                        ...col,
-                                        tasks: col.tasks.filter(task => task.id !== taskId),
-                                      }
-                                    : col,
-                                ),
-                              );
-                            } catch (error) {
-                              console.error("Error deleting task:", error);
-                            }
-                          }}
+                          onDelete={taskId => handleDeleteTask(taskId, column.id)}
                           onClick={taskId => {
                             const freshTask = getTaskById(taskId);
                             setEditingTask(freshTask);
@@ -313,23 +338,7 @@ const Board = () => {
           ) : activeTask ? (
             <TaskCard
               task={activeTask}
-              onDelete={async taskId => {
-                try {
-                  await axiosInstance.delete(`/api/tasks/${taskId}/`);
-                  setColumns(prev =>
-                    prev.map(col =>
-                      col.id === activeTask.column
-                        ? {
-                            ...col,
-                            tasks: col.tasks.filter(task => task.id !== taskId),
-                          }
-                        : col,
-                    ),
-                  );
-                } catch (error) {
-                  console.error("Error deleting task:", error);
-                }
-              }}
+              onDelete={() => handleDeleteTask(activeTask.id, activeTask.column)}
             />
           ) : null}
         </DragOverlay>
@@ -340,24 +349,7 @@ const Board = () => {
           task={editingTask}
           onClose={() => setEditingTask(null)}
           onSave={handleUpdateTask}
-          onDelete={async taskId => {
-            try {
-              await axiosInstance.delete(`/api/tasks/${taskId}/`);
-              setColumns(prev =>
-                prev.map(col =>
-                  col.id === editingTask.column
-                    ? {
-                        ...col,
-                        tasks: col.tasks.filter(task => task.id !== taskId),
-                      }
-                    : col,
-                ),
-              );
-              setEditingTask(null);
-            } catch (error) {
-              console.error("Error deleting task:", error);
-            }
-          }}
+          onDelete={taskId => handleDeleteTask(taskId, editingTask.column)}
         />
       )}
     </>
