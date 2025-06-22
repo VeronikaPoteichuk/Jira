@@ -10,6 +10,9 @@ class Board(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"Board: {self.name} (Project: {self.project.name})"
+
 
 class Column(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name="columns")
@@ -19,14 +22,14 @@ class Column(models.Model):
     class Meta:
         ordering = ["order"]
 
+    def __str__(self):
+        return f"Column: {self.name} (Board: {self.board.name})"
+
 
 class Task(models.Model):
     column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="tasks")
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    assignee = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
-    )
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name="created_tasks",
@@ -40,6 +43,9 @@ class Task(models.Model):
 
     class Meta:
         ordering = ["order"]
+
+    def __str__(self):
+        return f"Task #{self.id}: {self.title} by {self.author} in {self.column.name}"
 
 
 class Comment(models.Model):

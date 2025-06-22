@@ -3,6 +3,8 @@ from .models import Board, Column, Task, Comment
 
 
 class TaskWriteSerializer(serializers.ModelSerializer):
+    author = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
     class Meta:
         model = Task
         fields = "__all__"
