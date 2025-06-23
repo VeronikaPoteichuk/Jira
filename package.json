@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@tiptap/extension-code": "^2.22.3",
+    "@tiptap/extension-image": "^2.22.3",
+    "@tiptap/extension-link": "^2.22.3"
+  }
+}
