@@ -715,6 +715,11 @@
   background-color: #ebecf0;
 }
 
+.save-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* sidebar */
 
 .task-sidebar {
@@ -899,4 +904,11 @@
   pointer-events: none;
   height: 0;
   float: left;
+}
+
+.emoji-picker-popover {
+  position: absolute;
+  z-index: 1000;
+  top: 40px;
+  left: 0;
 }

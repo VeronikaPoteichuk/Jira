@@ -5,6 +5,7 @@ import ListUsers from "../list_users/ListUsers";
 import MainPage from "../main_page/MainPage";
 import ProjectPage from "../project_page/ProjectPage";
 import Board from "../boards/Board";
+import { ToastContainer } from "react-toastify";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
         <Route path="/project-page" element={<ProjectPage />} />
         <Route path="/board" element={<Board />} />
       </Routes>
+      <ToastContainer position="top-right" autoClose={4000} />
     </BrowserRouter>
   );
 }

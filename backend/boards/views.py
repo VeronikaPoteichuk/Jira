@@ -66,8 +66,31 @@ class TaskViewSet(ModelViewSet):
             column__board__project__created_by=self.request.user
         ).select_related("column__board__project", "author", "column")
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        task = serializer.save(author=self.request.user)
+        read_serializer = TaskReadSerializer(
+            task, context=self.get_serializer_context()
+        )
+        return Response(read_serializer.data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        task = serializer.save()
+
+        read_serializer = TaskReadSerializer(
+            task, context=self.get_serializer_context()
+        )
+        return Response(read_serializer.data, status=status.HTTP_200_OK)
+
+    def partial_update(self, request, *args, **kwargs):
+        kwargs["partial"] = True
+        return self.update(request, *args, **kwargs)
 
     @action(detail=False, methods=["post"])
     def reorder(self, request):

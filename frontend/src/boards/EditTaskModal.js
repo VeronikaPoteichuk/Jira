@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { X, Check } from "lucide-react";
 import axiosInstance from "../api/axios";
 import CommentEditor from "./CommentEditor";
+import DOMPurify from "dompurify";
 
 const EditTaskModal = ({ task, onClose, onSave }) => {
   const [title, setTitle] = useState("");
@@ -66,17 +67,31 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
     const trimmed = title.trim();
     if (!trimmed) return;
 
+    const payload = {};
+    if (trimmed !== task.title) {
+      payload.title = trimmed;
+    }
+    if (editedDescription.trim() !== (task.description || "").trim()) {
+      payload.description = editedDescription.trim();
+    }
+
+    if (Object.keys(payload).length === 0) {
+      onClose();
+      return;
+    }
+
     try {
-      const res = await axiosInstance.patch(`/api/tasks/${task.id}/`, {
-        title: trimmed,
-        description: editedDescription.trim(),
-      });
+      const res = await axiosInstance.patch(`/api/tasks/${task.id}/`, payload);
       onSave(res.data);
       onClose();
     } catch (error) {
       console.error("Error updating task", error);
     }
   };
+
+  const isDirty =
+    title.trim() !== (task.title || "").trim() ||
+    editedDescription.trim() !== (task.description || "").trim();
 
   const TABS = ["Comments", "History", "Work log"];
 
@@ -157,7 +172,10 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
                             {comments.length === 0 && <p>There are no comments yet.</p>}
                             {comments.map(c => (
                               <div key={c.id} className="comment-item">
-                                <strong>{c.author_username}:</strong> {c.text}
+                                <strong>{c.author_username}:</strong>
+                                <div
+                                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(c.text) }}
+                                />
                               </div>
                             ))}
                           </div>
@@ -188,9 +206,15 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
               </div>
 
               <div className="modal-task-buttons">
-                <button className="save-button" onClick={handleSave}>
+                <button
+                  className="save-button"
+                  onClick={handleSave}
+                  disabled={!isDirty}
+                  title={!isDirty ? "No changes to save" : "Save changes"}
+                >
                   <Check size={18} /> Save
                 </button>
+
                 <button className="cancel-task-button" onClick={onClose}>
                   <X size={18} />
                   Cancel

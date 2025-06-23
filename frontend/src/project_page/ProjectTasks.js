@@ -3,6 +3,7 @@ import axiosInstance from "../api/axios";
 import { Search, X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import EditTaskModal from "../boards/EditTaskModal";
 import AddTaskToggle from "../boards/AddTaskToggle";
+import { toast } from "react-toastify";
 import "./style.css";
 
 const ITEMS_PER_PAGE = 10;
@@ -27,7 +28,7 @@ const ProjectTasks = ({ projectId }) => {
       const response = await axiosInstance.get(`/api/tasks/?project=${projectId}`);
       setTasks(response.data);
     } catch (error) {
-      console.error("Error loading tasks:", error);
+      handleApiError(error, "Failed to load tasks.");
     }
   }, [projectId]);
 
@@ -56,8 +57,9 @@ const ProjectTasks = ({ projectId }) => {
         title: editingTitle,
       });
       setTasks(prev => prev.map(t => (t.id === taskId ? { ...t, title: editingTitle } : t)));
+      toast.success("Title updated");
     } catch (error) {
-      console.error("Error updating title:", error);
+      handleApiError(error, "Failed to update task title.");
     }
     setEditingTaskId(null);
     setEditingTitle("");
@@ -169,21 +171,23 @@ const ProjectTasks = ({ projectId }) => {
       );
 
       setTasks(prev => [...prev, newTask]);
+      toast.success("Task added successfully.");
     } catch (error) {
-      console.error("Error adding task:", error.response?.data || error.message);
+      handleApiError(error, "Failed to add task.");
     }
   };
 
   const handleTaskSave = updatedTask => {
-    setColumns(prevColumns =>
-      prevColumns.map(col => {
-        if (col.id !== updatedTask.column) return col;
+    setColumns(prevColumns => {
+      return prevColumns.map(col => {
+        if (!col.tasks.some(task => task.id === updatedTask.id)) return col;
 
-        const tasks = col.tasks.map(task => (task.id === updatedTask.id ? updatedTask : task));
-
-        return { ...col, tasks };
-      }),
-    );
+        const updatedTasks = col.tasks.map(task =>
+          task.id === updatedTask.id ? updatedTask : task,
+        );
+        return { ...col, tasks: updatedTasks };
+      });
+    });
 
     setTasks(prev => prev.map(task => (task.id === updatedTask.id ? updatedTask : task)));
   };
@@ -198,6 +202,17 @@ const ProjectTasks = ({ projectId }) => {
     }
 
     return <ArrowUpDown size={14} style={{ marginLeft: 4, opacity: 0.4 }} />;
+  };
+
+  const handleApiError = (error, fallbackMessage = "Something went wrong.") => {
+    const message =
+      error?.response?.data?.detail ||
+      error?.response?.data?.message ||
+      error?.message ||
+      fallbackMessage;
+
+    console.error("API Error:", message);
+    toast.error(message);
   };
 
   return (
