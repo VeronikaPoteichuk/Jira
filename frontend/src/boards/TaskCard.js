@@ -157,7 +157,9 @@ const TaskCard = ({ task, onDelete, onClick, onUpdate }) => {
       )}
       <div className="task-meta">
         <input type="checkbox" defaultChecked onClick={e => e.stopPropagation()} />
-        <span className="task-id">board_name-{task.id}</span>
+        <span className="task-id">
+          {task.project_name}-{task.id}
+        </span>
       </div>
       {showDeleteModal && (
         <div className="modal-overlay" onClick={e => e.stopPropagation()}>

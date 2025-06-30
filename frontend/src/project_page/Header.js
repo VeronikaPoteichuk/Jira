@@ -5,7 +5,7 @@ import "./style.css";
 
 const Header = ({ onToggleSidebar }) => {
   const { projectId } = useParams();
-  const [projectName, setProjectName] = useState("...");
+  const [projectName, setProjectName] = useState("");
 
   useEffect(() => {
     if (!projectId) return;
@@ -25,7 +25,9 @@ const Header = ({ onToggleSidebar }) => {
       <button className="menu-button" onClick={onToggleSidebar}>
         ☰
       </button>
-      <h1 className="header-title">{projectName}</h1>
+      <a href="/project-page" className="header-title">
+        {projectName || "Jira-like system"}
+      </a>
     </header>
   );
 };

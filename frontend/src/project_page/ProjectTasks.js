@@ -35,7 +35,7 @@ const ProjectTasks = ({ projectId }) => {
     } catch (error) {
       handleApiError(error, "Failed to load tasks.");
     }
-  }, [projectId]);
+  }, [cleanBoardId]);
 
   useEffect(() => {
     axiosInstance.get(`/api/boards/${cleanBoardId}/`).then(res => {
@@ -222,7 +222,6 @@ const ProjectTasks = ({ projectId }) => {
 
   return (
     <div className="project-tasks">
-      <h2 className="tasks-heading">Tasks of project</h2>
       <div className="controls">
         <div className="search-task-container">
           <Search className="search-task-icon" size={16} />

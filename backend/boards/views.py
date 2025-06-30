@@ -30,6 +30,13 @@ class BoardViewSet(ModelViewSet):
             )
         )
 
+    def perform_create(self, serializer):
+        board = serializer.save(created_by=self.request.user)
+
+        default_columns = ["To Do", "In Progress", "Done"]
+        for i, name in enumerate(default_columns):
+            Column.objects.create(board=board, name=name, order=i)
+
     @action(detail=True, methods=["get"])
     def tasks(self, request, pk=None):
         board = self.get_object()

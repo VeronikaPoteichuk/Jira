@@ -1,51 +1,22 @@
-import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import axiosInstance from "../api/axios";
+import React from "react";
+import { Link } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import "./style.css";
+import { useProjectBoards } from "../hooks/useProjectBoards";
 
 const ProjectBoardsPage = () => {
-  const { projectId } = useParams();
-  const [boards, setBoards] = useState([]);
-  const [projectName, setProjectName] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [sidebarVisible, setSidebarVisible] = useState(true);
-  const [error, setError] = useState(null);
+  const { boards, loading, error, cleanProjectId } = useProjectBoards();
 
-  const cleanProjectId = projectId?.match(/^project-(\d+)$/)?.[1] || "";
-
-  if (!cleanProjectId) {
-    return <p>Invalid project ID</p>;
-  }
+  const [sidebarVisible, setSidebarVisible] = React.useState(true);
 
   const toggleSidebar = () => {
     setSidebarVisible(prev => !prev);
   };
 
-  useEffect(() => {
-    const fetchProjectBoards = async () => {
-      if (!cleanProjectId) {
-        console.error("Invalid project ID");
-        return;
-      }
-
-      try {
-        console.log("Fetching boards for project:", cleanProjectId);
-
-        const boardsRes = await axiosInstance.get(`/api/projects/${cleanProjectId}/boards/`);
-
-        setBoards(boardsRes.data);
-        setLoading(false);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load project boards.");
-        setLoading(false);
-      }
-    };
-
-    fetchProjectBoards();
-  }, [cleanProjectId]);
+  if (!cleanProjectId) {
+    return <p>Invalid project ID</p>;
+  }
 
   return (
     <div className="project-page">
@@ -57,12 +28,11 @@ const ProjectBoardsPage = () => {
         {sidebarVisible && <Sidebar />}
 
         <main style={{ padding: 20, flex: 1 }}>
-          <h1>Boards for Project: {projectName}</h1>
+          <h1>Boards for Project</h1>
 
           {loading && <p>Loading boards...</p>}
           {error && <p style={{ color: "red" }}>{error}</p>}
-
-          {!loading && !error && boards.length === 0 && <p>No boards found for this project.</p>}
+          {!loading && !error && boards.length === 0 && <p>No boards found.</p>}
 
           {!loading && !error && boards.length > 0 && (
             <ul>

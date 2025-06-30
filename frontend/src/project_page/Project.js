@@ -35,7 +35,7 @@ const Projects = () => {
       </div>
 
       <div className="layout" style={{ display: "flex" }}>
-        {sidebarVisible && <Sidebar />}
+        {/* {sidebarVisible && <Sidebar />} */}
 
         <main style={{ padding: 20, flex: 1 }}>
           <h1>Projects</h1>
