@@ -15,6 +15,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from users.views_auth import LoginView, LogoutView, GoogleAuthView
 import projects.urls
 import boards.urls
+from boards.views import ProjectBoardsAPIView
 
 
 @ensure_csrf_cookie
@@ -39,6 +40,11 @@ urlpatterns = [
     path("api/auth/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/auth/logout/", LogoutView.as_view(), name="token_logout"),
     path("api/auth/google/", GoogleAuthView.as_view(), name="google_auth"),
+    path(
+        "api/projects/<int:project_id>/boards/",
+        ProjectBoardsAPIView.as_view(),
+        name="project-boards",
+    ),
     path("api/", include("projects.urls")),
     path("api/", include("boards.urls")),
 ]

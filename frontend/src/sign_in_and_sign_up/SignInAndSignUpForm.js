@@ -64,9 +64,15 @@ const AuthFormContent = () => {
         username: loginData.username,
         password: loginData.password,
       });
+
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
-      navigate("/project-page");
+
+      const projectId = "1";
+      const boardId = "1";
+
+      navigate(`/project-page`);
+      // navigate(`/project-page/project-${projectId}/board-${boardId}`);
     } catch (error) {
       console.error(error);
       alert("Login failed");
@@ -91,7 +97,16 @@ const AuthFormContent = () => {
         const data = await res.json();
         localStorage.setItem("access", data.access);
         localStorage.setItem("refresh", data.refresh);
-        navigate("/project-page");
+
+        const projectsRes = await axiosInstance.get("/api/projects/");
+        const firstProjectId = projectsRes.data[0]?.id;
+
+        if (firstProjectId) {
+          navigate(`/project-page/${firstProjectId}`);
+        } else {
+          alert("No projects found for this user.");
+          navigate("/");
+        }
       }
     },
     onError: () => console.error("Google login error"),

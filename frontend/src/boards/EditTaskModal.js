@@ -44,6 +44,7 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
       setDescription(res.data.description);
       setEditedDescription(res.data.description);
       setIsEditingDescription(false);
+      onSave?.(res.data);
     } catch (error) {
       console.error("Error updating description", error);
     }

@@ -10,6 +10,8 @@ from .serializers import (
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 
 class BoardViewSet(ModelViewSet):
@@ -27,6 +29,15 @@ class BoardViewSet(ModelViewSet):
                 "columns__tasks__column__board__project",
             )
         )
+
+    @action(detail=True, methods=["get"])
+    def tasks(self, request, pk=None):
+        board = self.get_object()
+        tasks = Task.objects.filter(column__board=board).select_related(
+            "column__board__project", "author", "column"
+        )
+        serializer = TaskReadSerializer(tasks, many=True)
+        return Response(serializer.data)
 
 
 class ColumnViewSet(ModelViewSet):
@@ -135,3 +146,12 @@ class CommentViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(task_id=self.kwargs["task_pk"], author=self.request.user)
+
+
+class ProjectBoardsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, project_id):
+        boards = Board.objects.filter(project_id=project_id)
+        serializer = BoardSerializer(boards, many=True)
+        return Response(serializer.data)

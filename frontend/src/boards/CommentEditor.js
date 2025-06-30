@@ -4,7 +4,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import ImageExtension from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
-import Code from "@tiptap/extension-code";
+// import Code from "@tiptap/extension-code";
 import Mention from "@tiptap/extension-mention";
 import clsx from "clsx";
 
@@ -34,7 +34,7 @@ export default function CommentEditor({ onSubmit }) {
       Placeholder.configure({ placeholder: "Write something …" }),
       ImageExtension,
       Link.configure({ openOnClick: false }),
-      Code,
+      // Code,
       Mention.configure({
         HTMLAttributes: { class: "mention" },
         suggestion: {

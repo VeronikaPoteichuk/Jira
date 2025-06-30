@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { useParams } from "react-router-dom";
 import axiosInstance from "../api/axios";
 import { Search, X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import EditTaskModal from "../boards/EditTaskModal";
@@ -22,10 +23,14 @@ const ProjectTasks = ({ projectId }) => {
   const loader = useRef(null);
   const [columns, setColumns] = useState([]);
   const [selectedTask, setSelectedTask] = useState(null);
+  const { boardId } = useParams();
+  const cleanBoardId = boardId.replace(/^board-/, "");
 
   const fetchTasks = useCallback(async () => {
     try {
-      const response = await axiosInstance.get(`/api/tasks/?project=${projectId}`);
+      const response = await axiosInstance.get(`/api/boards/${cleanBoardId}/tasks/`);
+      console.log("CleanBoaedId:", cleanBoardId);
+      console.log("Response data:", response.data);
       setTasks(response.data);
     } catch (error) {
       handleApiError(error, "Failed to load tasks.");
@@ -33,10 +38,10 @@ const ProjectTasks = ({ projectId }) => {
   }, [projectId]);
 
   useEffect(() => {
-    axiosInstance.get("/api/boards/1/").then(res => {
-      setColumns(res.data.columns);
+    axiosInstance.get(`/api/boards/${cleanBoardId}/`).then(res => {
+      setColumns(res.data.columns || []);
     });
-  }, []);
+  }, [cleanBoardId]);
 
   useEffect(() => {
     fetchTasks();
@@ -307,9 +312,9 @@ const ProjectTasks = ({ projectId }) => {
         {viewMode === "infinite" && <div ref={loader} />}
       </div>
 
-      {viewMode === "infinite" && (
+      {viewMode === "infinite" && columns.length > 0 && columns[0]?.id && (
         <footer className="tasks-footer">
-          <AddTaskToggle columnId={columns[0]?.id} onAddTask={handleAddTask} />
+          <AddTaskToggle columnId={columns[0].id} onAddTask={handleAddTask} />
         </footer>
       )}
 

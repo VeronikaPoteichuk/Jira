@@ -14,11 +14,34 @@ const TaskCard = ({ task, onDelete, onClick, onUpdate }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const inputRef = useRef(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const menuRef = useRef(null);
+  const buttonRef = useRef(null);
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
+
+  useEffect(() => {
+    const handleClickOutside = e => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(e.target) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(e.target)
+      ) {
+        setMenuOpen(false);
+      }
+    };
+
+    if (menuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuOpen]);
 
   useEffect(() => {
     setTitle(task.title);
@@ -65,6 +88,7 @@ const TaskCard = ({ task, onDelete, onClick, onUpdate }) => {
       <div className="task-top-bar" onClick={() => onClick(task)}>
         {!isEditing && (
           <button
+            ref={buttonRef}
             className="menu-button"
             onClick={e => {
               e.stopPropagation();
@@ -75,7 +99,7 @@ const TaskCard = ({ task, onDelete, onClick, onUpdate }) => {
           </button>
         )}
         {menuOpen && (
-          <div className="task-menu">
+          <div className="task-menu" ref={menuRef}>
             <button
               onClick={e => {
                 setShowDeleteModal(true);

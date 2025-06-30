@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import axiosInstance from "../api/axios";
 import {
   DndContext,
@@ -29,6 +30,8 @@ const Board = () => {
   const [activeColumn, setActiveColumn] = useState(null);
   const [editingTask, setEditingTask] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const { boardId } = useParams();
+  const cleanBoardId = boardId.replace(/^board-/, "");
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -40,10 +43,11 @@ const Board = () => {
   );
 
   useEffect(() => {
-    axiosInstance.get("/api/boards/1/").then(res => {
+    if (!boardId) return;
+    axiosInstance.get(`/api/boards/${cleanBoardId}/`).then(res => {
       setColumns(res.data.columns);
     });
-  }, []);
+  }, [boardId]);
 
   const handleDragStart = event => {
     const { active } = event;
@@ -152,7 +156,7 @@ const Board = () => {
     try {
       const res = await axiosInstance.post("/api/columns/", {
         name: "New column",
-        board: 1,
+        board: cleanBoardId,
         order: columns.length,
       });
 
@@ -203,12 +207,16 @@ const Board = () => {
 
   const handleUpdateTask = updatedTask => {
     setColumns(prevColumns =>
-      prevColumns.map(col => {
-        if (col.id !== updatedTask.column) return col;
-
-        const tasks = col.tasks.map(task => (task.id === updatedTask.id ? updatedTask : task));
-
-        return { ...col, tasks };
+      prevColumns.map(column => {
+        if (column.tasks.some(task => task.id === updatedTask.id)) {
+          return {
+            ...column,
+            tasks: column.tasks.map(task =>
+              task.id === updatedTask.id ? { ...task, ...updatedTask } : task,
+            ),
+          };
+        }
+        return column;
       }),
     );
   };
