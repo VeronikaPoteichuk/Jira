@@ -3,6 +3,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import axiosInstance from "../api/axios";
 import { Check, X, Pencil, MoreVertical } from "lucide-react";
+import { useDeleteModal } from "../hooks/DeleteModalContext";
 
 const TaskCard = ({ task, onDelete, onClick, onUpdate }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -13,9 +14,9 @@ const TaskCard = ({ task, onDelete, onClick, onUpdate }) => {
   const [title, setTitle] = useState(task.title);
   const [menuOpen, setMenuOpen] = useState(false);
   const inputRef = useRef(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
+  const { openModal: openDeleteModal } = useDeleteModal();
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -102,10 +103,13 @@ const TaskCard = ({ task, onDelete, onClick, onUpdate }) => {
           <div className="task-menu" ref={menuRef}>
             <button
               onClick={e => {
-                setShowDeleteModal(true);
                 e.stopPropagation();
+                openDeleteModal(
+                  task,
+                  t => onDelete(t.id),
+                  t => `task "${t.title}"`,
+                );
               }}
-              onKeyDown={handleKeyDown}
             >
               Delete
             </button>
@@ -161,30 +165,6 @@ const TaskCard = ({ task, onDelete, onClick, onUpdate }) => {
           {task.project_name}-{task.id}
         </span>
       </div>
-      {showDeleteModal && (
-        <div className="modal-overlay" onClick={e => e.stopPropagation()}>
-          <div className="modal-contentt">
-            <p4 className="modal-title-text">Delete task?</p4>
-            <p className="modal-description">
-              Are you sure you want to delete task {task.title}? This action cannot be undone.
-            </p>
-            <div className="modal-buttons">
-              <button className="cancel-button" onClick={() => setShowDeleteModal(false)}>
-                Cancel
-              </button>
-              <button
-                className="delete-button"
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  onDelete(task.id);
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

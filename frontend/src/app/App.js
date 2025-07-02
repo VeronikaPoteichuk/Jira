@@ -9,19 +9,22 @@ import Projects from "../project_page/Project";
 import ProjectBoardsPage from "../project_page/ProjectBoardsPage";
 import { ToastContainer } from "react-toastify";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { DeleteModalProvider } from "../components/DeleteModalContext";
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<MainPage />} />
-        <Route path="/users" element={<ListUsers />} />
-        <Route path="/auth" element={<AuthForm />} />
-        <Route path="/project-page/:projectId/:boardId" element={<ProjectPage />} />
-        <Route path="/project-page" element={<Projects />} />
-        {/* <Route path="/project-page/:projectId/:boardId" element={<Board />} /> */}
-        <Route path="/project-page/:projectId" element={<ProjectBoardsPage />} />
-      </Routes>
+      <DeleteModalProvider>
+        <Routes>
+          <Route path="/" element={<MainPage />} />
+          <Route path="/users" element={<ListUsers />} />
+          <Route path="/auth" element={<AuthForm />} />
+          <Route path="/project-page/:projectId/:boardId" element={<ProjectPage />} />
+          <Route path="/project-page" element={<Projects />} />
+          {/* <Route path="/project-page/:projectId/:boardId" element={<Board />} /> */}
+          <Route path="/project-page/:projectId" element={<ProjectBoardsPage />} />
+        </Routes>
+      </DeleteModalProvider>
       <ToastContainer position="top-right" autoClose={4000} />
     </BrowserRouter>
   );

@@ -46,10 +46,15 @@ class ColumnSerializer(serializers.ModelSerializer):
 
 class BoardSerializer(serializers.ModelSerializer):
     columns = ColumnSerializer(many=True, read_only=True)
+    task_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Board
-        fields = "__all__"
+        # fields = "__all__"
+        exclude = ["created_by"]
+
+    def get_task_count(self, obj):
+        return Task.objects.filter(column__board=obj).count()
 
 
 class CommentSerializer(serializers.ModelSerializer):

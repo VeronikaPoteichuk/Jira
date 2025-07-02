@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "./style.css";
 import { useProjectBoards } from "../hooks/useProjectBoards";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 const Sidebar = () => {
   const { boards, loading, error, cleanProjectId } = useProjectBoards();
@@ -18,7 +19,7 @@ const Sidebar = () => {
             onClick={() => setIsBoardsOpen(prev => !prev)}
             style={{ cursor: "pointer", userSelect: "none" }}
           >
-            📋 Board {isBoardsOpen ? "▾" : "▸"}
+            📋 Board {isBoardsOpen ? <ChevronDown /> : <ChevronRight />}
           </dt>
 
           {isBoardsOpen &&

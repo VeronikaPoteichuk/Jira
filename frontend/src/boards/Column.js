@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useDeleteModal } from "../hooks/DeleteModalContext";
 
 const Column = ({ column, isDragging, onUpdateName, onDelete }) => {
   const [isEditing, setIsEditing] = useState(column.isNew || false);
   const [editedName, setEditedName] = useState(column.name || "");
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  // const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const { openModal: openDeleteModal } = useDeleteModal();
 
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: `column:${column.id}`,
@@ -82,7 +84,16 @@ const Column = ({ column, isDragging, onUpdateName, onDelete }) => {
                   <button onClick={handleCancel} className="edit-btn cancel-btn">
                     &#10008;
                   </button>
-                  <button className="delete-column-btn" onClick={() => setShowDeleteModal(true)}>
+                  <button
+                    className="delete-column-btn"
+                    onClick={() =>
+                      openDeleteModal(
+                        column,
+                        col => onDelete(col.id),
+                        col => `column "${col.name}"`,
+                      )
+                    }
+                  >
                     &#128465;
                   </button>
                 </>
@@ -96,31 +107,6 @@ const Column = ({ column, isDragging, onUpdateName, onDelete }) => {
           </h2>
         )}
       </div>
-
-      {showDeleteModal && (
-        <div className="modal-overlay">
-          <div className="modal-contentt">
-            <p4 className="modal-title-text">Delete Column?</p4>
-            <p className="modal-description">
-              Are you sure you want to delete this column? This action cannot be undone.
-            </p>
-            <div className="modal-buttons">
-              <button className="cancel-button" onClick={() => setShowDeleteModal(false)}>
-                Cancel
-              </button>
-              <button
-                className="delete-button"
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  onDelete(column.id);
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

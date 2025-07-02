@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axiosInstance from "../api/axios";
 import { useParams } from "react-router-dom";
 
@@ -10,31 +10,34 @@ export const useProjectBoards = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchProjectBoards = async () => {
-      if (!cleanProjectId) {
-        console.error("Invalid project ID");
-        return;
-      }
+  const fetchProjectBoards = useCallback(async () => {
+    if (!cleanProjectId) {
+      console.error("Invalid project ID");
+      return;
+    }
 
-      try {
-        const boardsRes = await axiosInstance.get(`/api/projects/${cleanProjectId}/boards/`);
-        setBoards(boardsRes.data);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load project boards.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProjectBoards();
+    try {
+      setLoading(true);
+      const boardsRes = await axiosInstance.get(`/api/projects/${cleanProjectId}/boards/`);
+      setBoards(boardsRes.data);
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load project boards.");
+    } finally {
+      setLoading(false);
+    }
   }, [cleanProjectId]);
+
+  useEffect(() => {
+    fetchProjectBoards();
+  }, [fetchProjectBoards]);
 
   return {
     boards,
     loading,
     error,
     cleanProjectId,
+    refetch: fetchProjectBoards,
   };
 };

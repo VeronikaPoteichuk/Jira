@@ -111,6 +111,12 @@
   font-weight: 500;
 }
 
+.sidebar-nav img,
+.sidebar-nav svg {
+  vertical-align: top !important;
+  width: 20px;
+}
+
 /* { ProjectNavigation.js } */
 
 .project-navigation {
@@ -420,4 +426,134 @@
   background: transparent;
   font-size: 16px;
   cursor: pointer;
+}
+
+/* { ProjectBoardPage.js} */
+
+.add-board-btn {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background-color: #2e7df6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    width 0.5s ease,
+    padding 0.5s ease,
+    background-color 0.5s;
+  white-space: nowrap;
+  max-width: 40px;
+  gap: 0;
+  position: relative;
+}
+
+.add-board-btn .text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  transition:
+    opacity 0.5s ease,
+    width 0.7s ease;
+}
+
+.add-board-btn:hover {
+  max-width: 160px;
+  padding-right: 16px;
+  gap: 6px;
+}
+
+.add-board-btn:hover .text {
+  opacity: 1;
+  width: auto;
+}
+
+.add-board-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* { visualization of boards } */
+
+.board-grid {
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.board-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  height: 200px;
+  width: 300px;
+  background-color: #f5f5f5;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #333;
+  padding: 12px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.board-card:hover {
+  background-color: #eaf1ff;
+  box-shadow: 1px 1px 20px #bbbbbb;
+  transition: box-shadow 0.3s;
+  transform: translateY(-2px);
+}
+
+.board-name {
+  font-weight: 550;
+  font-size: 20px;
+}
+
+.board-content {
+  flex: 1;
+  text-decoration: none;
+  color: inherit;
+  align-self: start;
+}
+
+.task-count {
+  font-size: 12px;
+  color: gray;
+}
+
+.board-actions {
+  top: 8px;
+  right: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.action-menu {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  min-width: 100px;
+}
+
+.action-menu button {
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.action-menu button:hover {
+  background-color: #f0f0f0;
 }

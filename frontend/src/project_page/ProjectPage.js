@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useParams } from "react-router-dom";
 import Board from "../boards/Board";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
@@ -9,7 +10,8 @@ import "./style.css";
 const ProjectPage = () => {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [activeTab, setActiveTab] = useState("Board");
-  const projectId = 1;
+  const { projectId } = useParams();
+  const cleanProjectId = projectId.replace(/^project-/, "");
 
   const toggleSidebar = () => {
     setSidebarVisible(prev => !prev);
@@ -18,9 +20,9 @@ const ProjectPage = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "Board":
-        return <Board projectId={projectId} />;
+        return <Board projectId={cleanProjectId} />;
       case "Tasks":
-        return <ProjectTasks projectId={projectId} />;
+        return <ProjectTasks projectId={cleanProjectId} />;
       default:
         return <div>Section under development...</div>;
     }
