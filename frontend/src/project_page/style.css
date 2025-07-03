@@ -154,7 +154,7 @@
   font-size: 1.1rem;
 }
 
-/* { ProjectTask.js } */
+/* { ProjectTasks.js } */
 
 .project-tasks {
   padding: 1rem 2rem;
@@ -479,7 +479,8 @@
 
 /* { visualization of boards } */
 
-.board-grid {
+.board-grid,
+.project-grid {
   display: flex;
   gap: 16px;
   margin-top: 20px;
@@ -487,7 +488,8 @@
   flex-wrap: wrap;
 }
 
-.board-card {
+.board-card,
+.project-card {
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -503,31 +505,36 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.board-card:hover {
+.board-card:hover,
+.project-card:hover {
   background-color: #eaf1ff;
   box-shadow: 1px 1px 20px #bbbbbb;
   transition: box-shadow 0.3s;
   transform: translateY(-2px);
 }
 
-.board-name {
+.board-name,
+.project-name {
   font-weight: 550;
   font-size: 20px;
 }
 
-.board-content {
+.board-content,
+.project-content {
   flex: 1;
   text-decoration: none;
   color: inherit;
   align-self: start;
 }
 
-.task-count {
+.task-count,
+.board-count {
   font-size: 12px;
   color: gray;
 }
 
-.board-actions {
+.board-actions,
+.project-actions {
   top: 8px;
   right: 8px;
   display: flex;
@@ -557,3 +564,5 @@
 .action-menu button:hover {
   background-color: #f0f0f0;
 }
+
+/*  { Project.js } */

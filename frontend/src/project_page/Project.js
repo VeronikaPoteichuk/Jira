@@ -1,32 +1,41 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-// import Sidebar from "./Sidebar";
 import Header from "./Header";
-import axiosInstance from "../api/axios";
 import "./style.css";
+import { useDeleteModal } from "../hooks/DeleteModalContext";
+import { MoreVertical } from "lucide-react";
+import { useEntityManager } from "../hooks/useEntityManager";
+import { useOutsideClickMenu } from "../hooks/useOutsideClickMenu";
 
 const Projects = () => {
-  // const [sidebarVisible, setSidebarVisible] = useState(true);
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { openModal: openDeleteModal } = useDeleteModal();
+  const {
+    entities: projects,
+    loading,
+    creating,
+    error,
+    createEntity,
+    renameEntity,
+    deleteEntity,
+  } = useEntityManager("/api/projects/");
 
-  // const toggleSidebar = () => {
-  //   setSidebarVisible(prev => !prev);
-  // };
+  const { activeId: menuProjectId, toggleMenu, registerRef, closeMenu } = useOutsideClickMenu();
 
-  useEffect(() => {
-    axiosInstance
-      .get("/api/projects/")
-      .then(res => {
-        setProjects(res.data);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError("Failed to load projects");
-        setLoading(false);
-      });
-  }, []);
+  const handleCreateProject = async () => {
+    const name = prompt("Enter project name:");
+    if (!name || !name.trim()) return;
+    await createEntity({ name: name.trim(), description: "" });
+  };
+
+  const handleRenameProject = async id => {
+    const newName = prompt("Enter new project name:");
+    if (!newName) return;
+    await renameEntity(id, newName);
+  };
+
+  const handleDeleteProject = async project => {
+    await deleteEntity(project.id);
+  };
 
   return (
     <div className="project-page">
@@ -36,10 +45,14 @@ const Projects = () => {
       </div>
 
       <div className="layout" style={{ display: "flex" }}>
-        {/* {sidebarVisible && <Sidebar />} */}
-
         <main style={{ padding: 20, flex: 1 }}>
-          <h1>Projects</h1>
+          <h2 style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+            Projects
+            <button className="add-board-btn" onClick={handleCreateProject} disabled={creating}>
+              <span className="icon">+</span>
+              <span className="text">{creating ? "Creating..." : "Create project"}</span>
+            </button>
+          </h2>
 
           {loading && <p>Loading projects...</p>}
           {error && <p style={{ color: "red" }}>{error}</p>}
@@ -47,13 +60,46 @@ const Projects = () => {
           {!loading && !error && projects.length === 0 && <p>No projects found.</p>}
 
           {!loading && !error && projects.length > 0 && (
-            <ul>
+            <div className="project-grid">
               {projects.map(project => (
-                <li key={project.id} style={{ marginBottom: 8 }}>
-                  <Link to={`/project-page/project-${project.id}`}>{project.name}</Link>
-                </li>
+                <div key={project.id} className="project-card">
+                  <Link to={`/project-page/project-${project.id}`} className="project-content">
+                    <div className="project-name">{project.name}</div>
+                    <div className="board-count">{project.board_count ?? 0} boards</div>
+                  </Link>
+
+                  <div className="project-actions" ref={el => registerRef(project.id, el)}>
+                    <button
+                      className="menu-button"
+                      onClick={e => {
+                        e.preventDefault();
+                        toggleMenu(project.id);
+                      }}
+                    >
+                      <MoreVertical size={16} />
+                    </button>
+
+                    {menuProjectId === project.id && (
+                      <div className="action-menu">
+                        <button onClick={() => handleRenameProject(project.id)}>Rename</button>
+                        <button
+                          onClick={() => {
+                            openDeleteModal(
+                              project,
+                              handleDeleteProject,
+                              project => `project "${project.name}"`,
+                            );
+                            closeMenu();
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </main>
       </div>

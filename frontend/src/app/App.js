@@ -9,7 +9,7 @@ import Projects from "../project_page/Project";
 import ProjectBoardsPage from "../project_page/ProjectBoardsPage";
 import { ToastContainer } from "react-toastify";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { DeleteModalProvider } from "../components/DeleteModalContext";
+import { DeleteModalProvider } from "../hooks/DeleteModalContext";
 
 function App() {
   return (
