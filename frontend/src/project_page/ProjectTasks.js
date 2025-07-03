@@ -57,15 +57,27 @@ const ProjectTasks = ({ projectId }) => {
   };
 
   const handleTitleBlur = async taskId => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    const trimmedTitle = editingTitle.trim();
+
+    if (trimmedTitle === task.title.trim()) {
+      setEditingTaskId(null);
+      setEditingTitle("");
+      return;
+    }
+
     try {
       await axiosInstance.patch(`/api/tasks/${taskId}/`, {
-        title: editingTitle,
+        title: trimmedTitle,
       });
-      setTasks(prev => prev.map(t => (t.id === taskId ? { ...t, title: editingTitle } : t)));
+      setTasks(prev => prev.map(t => (t.id === taskId ? { ...t, title: trimmedTitle } : t)));
       toast.success("Title updated");
     } catch (error) {
       handleApiError(error, "Failed to update task title.");
     }
+
     setEditingTaskId(null);
     setEditingTitle("");
   };
