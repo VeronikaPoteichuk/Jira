@@ -1,15 +1,15 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
-import axiosInstance from "../api/axios";
+import { toast } from "react-toastify";
 import { Search, X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import axiosInstance from "../api/axios";
 import EditTaskModal from "../boards/EditTaskModal";
 import AddTaskToggle from "../boards/AddTaskToggle";
-import { toast } from "react-toastify";
 import "./style.css";
 
 const ITEMS_PER_PAGE = 10;
 
-const ProjectTasks = ({ projectId }) => {
+const ProjectTasks = () => {
   const [tasks, setTasks] = useState([]);
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editingTitle, setEditingTitle] = useState("");
@@ -20,11 +20,11 @@ const ProjectTasks = ({ projectId }) => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState("pagination");
-  const loader = useRef(null);
   const [columns, setColumns] = useState([]);
   const [selectedTask, setSelectedTask] = useState(null);
   const { boardId } = useParams();
   const cleanBoardId = boardId.replace(/^board-/, "");
+  const loader = useRef(null);
 
   const fetchTasks = useCallback(async () => {
     try {

@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "./Header";
-import "./style.css";
-import { useDeleteModal } from "../hooks/DeleteModalContext";
+import Sidebar from "./Sidebar";
 import { MoreVertical } from "lucide-react";
+import { useDeleteModal } from "../hooks/DeleteModalContext";
 import { useEntityManager } from "../hooks/useEntityManager";
 import { useOutsideClickMenu } from "../hooks/useOutsideClickMenu";
+import { useHoveredEntity } from "../hooks/HoveredEntityContext";
+import "./style.css";
 
 const Projects = () => {
   const { openModal: openDeleteModal } = useDeleteModal();
@@ -18,8 +20,10 @@ const Projects = () => {
     renameEntity,
     deleteEntity,
   } = useEntityManager("/api/projects/");
-
   const { activeId: menuProjectId, toggleMenu, registerRef, closeMenu } = useOutsideClickMenu();
+  const { hoveredEntity } = useHoveredEntity();
+  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const toggleSidebar = () => setSidebarVisible(prev => !prev);
 
   const handleCreateProject = async () => {
     const name = prompt("Enter project name:");
@@ -40,11 +44,13 @@ const Projects = () => {
   return (
     <div className="project-page">
       <div className="header-project-page">
-        <Header />
-        {/* <Header onToggleSidebar={toggleSidebar} /> */}
+        {/* <Header /> */}
+        <Header onToggleSidebar={toggleSidebar} />
       </div>
 
       <div className="layout" style={{ display: "flex" }}>
+        {sidebarVisible && <Sidebar />}
+
         <main style={{ padding: 20, flex: 1 }}>
           <h2 style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
             Projects
@@ -61,44 +67,53 @@ const Projects = () => {
 
           {!loading && !error && projects.length > 0 && (
             <div className="project-grid">
-              {projects.map(project => (
-                <div key={project.id} className="project-card">
-                  <Link to={`/project-page/project-${project.id}`} className="project-content">
-                    <div className="project-name">{project.name}</div>
-                    <div className="board-count">{project.board_count ?? 0} boards</div>
-                  </Link>
+              {/* {projects.map(project => ( */}
+              {projects.map(project => {
+                const isHovered =
+                  hoveredEntity.type === "project" && hoveredEntity.id === project.id;
 
-                  <div className="project-actions" ref={el => registerRef(project.id, el)}>
-                    <button
-                      className="menu-button"
-                      onClick={e => {
-                        e.preventDefault();
-                        toggleMenu(project.id);
-                      }}
-                    >
-                      <MoreVertical size={16} />
-                    </button>
+                return (
+                  <div
+                    key={project.id}
+                    className={`project-card ${isHovered ? "hovered-from-sidebar" : ""}`}
+                  >
+                    <Link to={`/project-page/project-${project.id}`} className="project-content">
+                      <div className="project-name">{project.name}</div>
+                      <div className="board-count">{project.board_count ?? 0} boards</div>
+                    </Link>
 
-                    {menuProjectId === project.id && (
-                      <div className="action-menu">
-                        <button onClick={() => handleRenameProject(project.id)}>Rename</button>
-                        <button
-                          onClick={() => {
-                            openDeleteModal(
-                              project,
-                              handleDeleteProject,
-                              project => `project "${project.name}"`,
-                            );
-                            closeMenu();
-                          }}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
+                    <div className="project-actions" ref={el => registerRef(project.id, el)}>
+                      <button
+                        className="menu-button"
+                        onClick={e => {
+                          e.preventDefault();
+                          toggleMenu(project.id);
+                        }}
+                      >
+                        <MoreVertical size={16} />
+                      </button>
+
+                      {menuProjectId === project.id && (
+                        <div className="action-menu">
+                          <button onClick={() => handleRenameProject(project.id)}>Rename</button>
+                          <button
+                            onClick={() => {
+                              openDeleteModal(
+                                project,
+                                handleDeleteProject,
+                                project => `project "${project.name}"`,
+                              );
+                              closeMenu();
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </main>

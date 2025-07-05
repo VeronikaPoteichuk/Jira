@@ -1,29 +1,32 @@
 import { useEffect, useState, useCallback } from "react";
-import axiosInstance from "../api/axios";
 import { useParams } from "react-router-dom";
+import axiosInstance from "../api/axios";
 
 export const useProjectBoards = () => {
   const { projectId } = useParams();
   const cleanProjectId = projectId?.match(/^project-(\d+)$/)?.[1] || "";
 
   const [boards, setBoards] = useState([]);
+  const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const fetchProjectBoards = useCallback(async () => {
-    if (!cleanProjectId) {
-      console.error("Invalid project ID");
-      return;
-    }
+    if (!cleanProjectId) return;
 
     try {
       setLoading(true);
-      const boardsRes = await axiosInstance.get(`/api/projects/${cleanProjectId}/boards/`);
+      const [projectRes, boardsRes] = await Promise.all([
+        axiosInstance.get(`/api/projects/${cleanProjectId}/`),
+        axiosInstance.get(`/api/projects/${cleanProjectId}/boards/`),
+      ]);
+
+      setProject(projectRes.data);
       setBoards(boardsRes.data);
       setError(null);
     } catch (err) {
       console.error(err);
-      setError("Failed to load project boards.");
+      setError("Failed to load project data.");
     } finally {
       setLoading(false);
     }
@@ -35,6 +38,7 @@ export const useProjectBoards = () => {
 
   return {
     boards,
+    project,
     loading,
     error,
     cleanProjectId,

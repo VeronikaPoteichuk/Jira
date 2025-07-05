@@ -109,6 +109,7 @@
 .sidebar-nav dd a.active-link {
   color: #1976d2;
   font-weight: 500;
+  background: aliceblue;
 }
 
 .sidebar-nav img,
@@ -507,7 +508,8 @@
 
 .board-card:hover,
 .project-card:hover,
-.board-card.hovered-from-sidebar {
+.board-card.hovered-from-sidebar,
+.project-card.hovered-from-sidebar {
   background-color: #eaf1ff;
   box-shadow: 1px 1px 20px #bbbbbb;
   transition: box-shadow 0.3s;
@@ -564,6 +566,63 @@
 
 .action-menu button:hover {
   background-color: #f0f0f0;
+}
+
+.description-textarea {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: 1px solid #dfe1e6;
+  resize: none;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+}
+
+.description-textarea:focus-visible {
+  outline: 2px solid #a5c2e9;
+  outline-offset: 2px;
+}
+
+.edit-description-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 4px;
+  margin-right: -1rem;
+}
+
+.project-description {
+  color: #555;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 8px;
+}
+
+.project-description:hover {
+  background-color: #f4f5f7;
+}
+
+.action-btn-save,
+.action-btn-cancel {
+  background: #fff;
+  border: 1px solid #dfe1e6;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.action-btn-save:hover {
+  background-color: #61bd4f;
+  color: white;
+}
+
+.action-btn-cancel:hover {
+  background-color: #eb5a46;
+  color: white;
 }
 
 /*  { Project.js } */

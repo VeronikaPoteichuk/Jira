@@ -10,13 +10,13 @@ import ProjectBoardsPage from "../project_page/ProjectBoardsPage";
 import { ToastContainer } from "react-toastify";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { DeleteModalProvider } from "../hooks/DeleteModalContext";
-import { HoveredBoardProvider } from "../hooks/HoveredBoardContext";
+import { HoveredEntityProvider } from "../hooks/HoveredEntityContext";
 
 function App() {
   return (
     <BrowserRouter>
       <DeleteModalProvider>
-        <HoveredBoardProvider>
+        <HoveredEntityProvider>
           <Routes>
             <Route path="/" element={<MainPage />} />
             <Route path="/users" element={<ListUsers />} />
@@ -26,7 +26,7 @@ function App() {
             {/* <Route path="/project-page/:projectId/:boardId" element={<Board />} /> */}
             <Route path="/project-page/:projectId" element={<ProjectBoardsPage />} />
           </Routes>
-        </HoveredBoardProvider>
+        </HoveredEntityProvider>
       </DeleteModalProvider>
       <ToastContainer position="top-right" autoClose={4000} />
     </BrowserRouter>

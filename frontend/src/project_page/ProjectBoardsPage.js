@@ -1,28 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import axiosInstance from "../api/axios";
 import { useProjectBoards } from "../hooks/useProjectBoards";
 import { MoreVertical } from "lucide-react";
 import { useDeleteModal } from "../hooks/DeleteModalContext";
-import "./style.css";
 import { useEntityManager } from "../hooks/useEntityManager";
 import { useOutsideClickMenu } from "../hooks/useOutsideClickMenu";
-import { useHoveredBoard } from "../hooks/HoveredBoardContext"; // импортируем контекст
+import { useHoveredEntity } from "../hooks/HoveredEntityContext";
+import { X, Check } from "lucide-react";
+import "./style.css";
 
 const ProjectBoardsPage = () => {
-  const { boards, loading, error, cleanProjectId, refetch } = useProjectBoards();
-  const [sidebarVisible, setSidebarVisible] = useState(true);
-  const { hoveredBoardId } = useHoveredBoard(); // получаем hoveredBoardId
-
+  const { boards, project, loading, error, cleanProjectId, refetch } = useProjectBoards();
   const { creating, createEntity, renameEntity, deleteEntity } = useEntityManager("/api/boards/");
   const { activeId: menuBoardId, toggleMenu, registerRef, closeMenu } = useOutsideClickMenu();
   const { openModal: openDeleteModal } = useDeleteModal();
+  const { hoveredEntity } = useHoveredEntity();
+
+  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [editedDescription, setEditedDescription] = useState("");
 
   const toggleSidebar = () => setSidebarVisible(prev => !prev);
 
   const handleCreateBoard = async () => {
-    const name = prompt("Enter project name:");
+    const name = prompt("Enter board name:");
     if (!name || !name.trim()) return;
     await createEntity({ name: name.trim(), project: cleanProjectId });
     refetch();
@@ -38,6 +42,17 @@ const ProjectBoardsPage = () => {
   const handleDeleteBoard = async board => {
     await deleteEntity(board.id);
     refetch();
+  };
+  const handleSaveDescription = async () => {
+    try {
+      await axiosInstance.patch(`/api/projects/${cleanProjectId}/`, {
+        description: editedDescription,
+      });
+      setIsEditingDescription(false);
+      refetch();
+    } catch (err) {
+      console.error("Failed to update description:", err);
+    }
   };
 
   if (!cleanProjectId) return <p>Invalid project ID</p>;
@@ -60,6 +75,39 @@ const ProjectBoardsPage = () => {
             </button>
           </h2>
 
+          {isEditingDescription ? (
+            <div>
+              <textarea
+                value={editedDescription}
+                onChange={e => setEditedDescription(e.target.value)}
+                rows={3}
+                className="description-textarea"
+              />
+              <div className="edit-description-actions">
+                <button className="action-btn-save" onClick={handleSaveDescription}>
+                  <Check />
+                </button>
+                <button
+                  className="action-btn-cancel"
+                  onClick={() => setIsEditingDescription(false)}
+                >
+                  <X />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div
+              className="project-description"
+              onClick={() => {
+                setEditedDescription(project?.description || "");
+                setIsEditingDescription(true);
+              }}
+              title="Click to edit"
+            >
+              {project?.description || <i>Click to add a description...</i>}
+            </div>
+          )}
+
           {loading && <p>Loading boards...</p>}
           {error && <p style={{ color: "red" }}>{error}</p>}
           {!loading && !error && boards.length === 0 && <p>No boards found.</p>}
@@ -67,7 +115,8 @@ const ProjectBoardsPage = () => {
           {!loading && !error && boards.length > 0 && (
             <div className="board-grid">
               {boards.map(board => {
-                const isHovered = board.id === hoveredBoardId;
+                const isHovered = hoveredEntity.type === "board" && hoveredEntity.id === board.id;
+
                 return (
                   <div
                     key={board.id}
