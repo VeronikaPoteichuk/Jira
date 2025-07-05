@@ -8,13 +8,14 @@ import { useDeleteModal } from "../hooks/DeleteModalContext";
 import "./style.css";
 import { useEntityManager } from "../hooks/useEntityManager";
 import { useOutsideClickMenu } from "../hooks/useOutsideClickMenu";
+import { useHoveredBoard } from "../hooks/HoveredBoardContext"; // импортируем контекст
 
 const ProjectBoardsPage = () => {
   const { boards, loading, error, cleanProjectId, refetch } = useProjectBoards();
   const [sidebarVisible, setSidebarVisible] = useState(true);
+  const { hoveredBoardId } = useHoveredBoard(); // получаем hoveredBoardId
 
   const { creating, createEntity, renameEntity, deleteEntity } = useEntityManager("/api/boards/");
-
   const { activeId: menuBoardId, toggleMenu, registerRef, closeMenu } = useOutsideClickMenu();
   const { openModal: openDeleteModal } = useDeleteModal();
 
@@ -65,47 +66,53 @@ const ProjectBoardsPage = () => {
 
           {!loading && !error && boards.length > 0 && (
             <div className="board-grid">
-              {boards.map(board => (
-                <div key={board.id} className="board-card">
-                  <Link
-                    to={`/project-page/project-${cleanProjectId}/board-${board.id}`}
-                    className="board-content"
+              {boards.map(board => {
+                const isHovered = board.id === hoveredBoardId;
+                return (
+                  <div
+                    key={board.id}
+                    className={`board-card ${isHovered ? "hovered-from-sidebar" : ""}`}
                   >
-                    <div className="board-name">{board.name}</div>
-                    <div className="task-count">{board.task_count ?? 0} tasks</div>
-                  </Link>
-
-                  <div className="board-actions" ref={el => registerRef(board.id, el)}>
-                    <button
-                      className="menu-button"
-                      onClick={e => {
-                        e.preventDefault();
-                        toggleMenu(board.id);
-                      }}
+                    <Link
+                      to={`/project-page/project-${cleanProjectId}/board-${board.id}`}
+                      className="board-content"
                     >
-                      <MoreVertical size={16} />
-                    </button>
+                      <div className="board-name">{board.name}</div>
+                      <div className="task-count">{board.task_count ?? 0} tasks</div>
+                    </Link>
 
-                    {menuBoardId === board.id && (
-                      <div className="action-menu">
-                        <button onClick={() => handleRenameBoard(board.id)}>Rename</button>
-                        <button
-                          onClick={() => {
-                            openDeleteModal(
-                              board,
-                              handleDeleteBoard,
-                              board => `board "${board.name}"`,
-                            );
-                            closeMenu();
-                          }}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
+                    <div className="board-actions" ref={el => registerRef(board.id, el)}>
+                      <button
+                        className="menu-button"
+                        onClick={e => {
+                          e.preventDefault();
+                          toggleMenu(board.id);
+                        }}
+                      >
+                        <MoreVertical size={16} />
+                      </button>
+
+                      {menuBoardId === board.id && (
+                        <div className="action-menu">
+                          <button onClick={() => handleRenameBoard(board.id)}>Rename</button>
+                          <button
+                            onClick={() => {
+                              openDeleteModal(
+                                board,
+                                handleDeleteBoard,
+                                board => `board "${board.name}"`,
+                              );
+                              closeMenu();
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </main>

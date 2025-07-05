@@ -10,20 +10,23 @@ import ProjectBoardsPage from "../project_page/ProjectBoardsPage";
 import { ToastContainer } from "react-toastify";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { DeleteModalProvider } from "../hooks/DeleteModalContext";
+import { HoveredBoardProvider } from "../hooks/HoveredBoardContext";
 
 function App() {
   return (
     <BrowserRouter>
       <DeleteModalProvider>
-        <Routes>
-          <Route path="/" element={<MainPage />} />
-          <Route path="/users" element={<ListUsers />} />
-          <Route path="/auth" element={<AuthForm />} />
-          <Route path="/project-page/:projectId/:boardId" element={<ProjectPage />} />
-          <Route path="/project-page" element={<Projects />} />
-          {/* <Route path="/project-page/:projectId/:boardId" element={<Board />} /> */}
-          <Route path="/project-page/:projectId" element={<ProjectBoardsPage />} />
-        </Routes>
+        <HoveredBoardProvider>
+          <Routes>
+            <Route path="/" element={<MainPage />} />
+            <Route path="/users" element={<ListUsers />} />
+            <Route path="/auth" element={<AuthForm />} />
+            <Route path="/project-page/:projectId/:boardId" element={<ProjectPage />} />
+            <Route path="/project-page" element={<Projects />} />
+            {/* <Route path="/project-page/:projectId/:boardId" element={<Board />} /> */}
+            <Route path="/project-page/:projectId" element={<ProjectBoardsPage />} />
+          </Routes>
+        </HoveredBoardProvider>
       </DeleteModalProvider>
       <ToastContainer position="top-right" autoClose={4000} />
     </BrowserRouter>

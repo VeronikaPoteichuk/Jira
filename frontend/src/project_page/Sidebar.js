@@ -3,11 +3,13 @@ import { Link, useLocation } from "react-router-dom";
 import "./style.css";
 import { useProjectBoards } from "../hooks/useProjectBoards";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { useHoveredBoard } from "../hooks/HoveredBoardContext";
 
 const Sidebar = () => {
   const { boards, loading, error, cleanProjectId } = useProjectBoards();
   const [isBoardsOpen, setIsBoardsOpen] = useState(false);
   const location = useLocation();
+  const { setHoveredBoardId } = useHoveredBoard();
 
   if (!cleanProjectId) return <p>Invalid project ID</p>;
 
@@ -28,7 +30,12 @@ const Sidebar = () => {
               const isActive = location.pathname === path;
 
               return (
-                <dd key={board.id} className={isActive ? "active" : ""}>
+                <dd
+                  key={board.id}
+                  className={isActive ? "active" : ""}
+                  onMouseEnter={() => setHoveredBoardId(board.id)}
+                  onMouseLeave={() => setHoveredBoardId(null)}
+                >
                   <Link to={path} className={isActive ? "active-link" : ""}>
                     {board.name}
                   </Link>

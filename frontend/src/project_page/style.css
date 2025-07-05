@@ -506,7 +506,8 @@
 }
 
 .board-card:hover,
-.project-card:hover {
+.project-card:hover,
+.board-card.hovered-from-sidebar {
   background-color: #eaf1ff;
   box-shadow: 1px 1px 20px #bbbbbb;
   transition: box-shadow 0.3s;
