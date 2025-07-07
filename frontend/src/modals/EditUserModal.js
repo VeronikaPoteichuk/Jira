@@ -8,7 +8,7 @@ const EditUserModal = ({ isOpen, toggle, user, refresh }) => {
     return null;
   }
 
-  const handleSave = async (formData) => {
+  const handleSave = async formData => {
     try {
       await axios.put(`/users/${user.id}/`, formData);
       refresh();
