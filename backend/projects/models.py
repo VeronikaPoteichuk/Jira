@@ -7,6 +7,8 @@ class Project(models.Model):
     description = models.TextField(blank=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+    github_repo = models.CharField(max_length=255, blank=True, null=True)
+    github_token = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return f"Project: {self.name}"

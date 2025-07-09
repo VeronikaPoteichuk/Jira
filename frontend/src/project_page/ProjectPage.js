@@ -5,6 +5,7 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 import ProjectNavigation from "./ProjectNavigation";
 import ProjectTasks from "./ProjectTasks";
+import ProjectSettings from "./ProjectSettings";
 import "./style.css";
 
 const ProjectPage = () => {
@@ -23,6 +24,8 @@ const ProjectPage = () => {
         return <Board projectId={cleanProjectId} />;
       case "Tasks":
         return <ProjectTasks projectId={cleanProjectId} />;
+      case "Settings":
+        return <ProjectSettings projectId={cleanProjectId} />;
       default:
         return <div>Section under development...</div>;
     }

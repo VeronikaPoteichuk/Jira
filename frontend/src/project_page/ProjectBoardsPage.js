@@ -9,8 +9,10 @@ import { useDeleteModal } from "../hooks/DeleteModalContext";
 import { useEntityManager } from "../hooks/useEntityManager";
 import { useOutsideClickMenu } from "../hooks/useOutsideClickMenu";
 import { useHoveredEntity } from "../hooks/HoveredEntityContext";
-import { X, Check } from "lucide-react";
+import { X, Check, Settings } from "lucide-react";
 import "./style.css";
+import ProjectSettings from "./ProjectSettings";
+import Modal from "./Modal";
 
 const ProjectBoardsPage = () => {
   const { boards, project, loading, error, cleanProjectId, refetch } = useProjectBoards();
@@ -22,6 +24,7 @@ const ProjectBoardsPage = () => {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [editedDescription, setEditedDescription] = useState("");
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const toggleSidebar = () => setSidebarVisible(prev => !prev);
 
@@ -67,13 +70,18 @@ const ProjectBoardsPage = () => {
         {sidebarVisible && <Sidebar />}
 
         <main style={{ padding: 20, flex: 1 }}>
-          <h2 style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-            Boards for Project
-            <button className="add-board-btn" onClick={handleCreateBoard} disabled={creating}>
-              <span className="icon">+</span>
-              <span className="text">{creating ? "Creating..." : "Create board"}</span>
+          <div className="project-header">
+            <h2>
+              Boards for Project
+              <button className="add-board-btn" onClick={handleCreateBoard} disabled={creating}>
+                <span className="icon">+</span>
+                <span className="text">{creating ? "Creating..." : "Create board"}</span>
+              </button>
+            </h2>
+            <button className="settings-project-btn" onClick={() => setSettingsOpen(true)}>
+              <Settings />
             </button>
-          </h2>
+          </div>
 
           {isEditingDescription ? (
             <div>
@@ -166,6 +174,9 @@ const ProjectBoardsPage = () => {
           )}
         </main>
       </div>
+      <Modal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)}>
+        <ProjectSettings projectId={cleanProjectId} />
+      </Modal>
     </div>
   );
 };

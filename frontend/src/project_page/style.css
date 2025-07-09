@@ -431,6 +431,21 @@
 
 /* { ProjectBoardPage.js} */
 
+.project-header {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.project-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 !important;
+}
+
 .add-board-btn {
   display: flex;
   align-items: center;
@@ -476,6 +491,25 @@
 .add-board-btn:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
+}
+
+.settings-project-btn {
+  width: 40px;
+  background: transparent;
+  border-radius: 8px;
+  border: 1px solid #dfe1e6;
+}
+
+.settings-project-btn:hover {
+  background-color: #f4f5f7;
+}
+
+.settings-project-btn:hover svg {
+  color: #0052cc;
+  transform: rotate(20deg);
+  transition:
+    transform 0.3s ease,
+    color 0.3s ease;
 }
 
 /* { visualization of boards } */
@@ -625,4 +659,119 @@
   color: white;
 }
 
-/*  { Project.js } */
+/*  { ProjectSettings.js } */
+
+.project-settings {
+  padding: 1rem 3rem;
+  max-width: 1000px;
+}
+
+.repo-input-block {
+  margin-bottom: 16px;
+  display: flex;
+}
+
+.repo-input-block input {
+  width: 100%;
+  padding: 8px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid gray;
+}
+
+.repo-input-block input:focus {
+  outline: 2px solid #a5c2e9 !important;
+  outline-offset: 2px;
+}
+
+.project-settings .save-button {
+  padding: 8px 16px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-left: 0 !important;
+}
+
+.save-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.github-login-block {
+  display: flex;
+  margin-bottom: 1rem;
+  align-items: baseline;
+}
+
+.github-login-block div {
+  width: 200px;
+}
+
+.github-login-link {
+  padding: 8px;
+  border: 1px solid gray;
+  border-radius: 8px;
+}
+
+.repo-input-block label {
+  min-width: 200px;
+}
+.github-status {
+  font-size: 0.9rem;
+}
+
+.github-status.authorized {
+  color: green;
+}
+
+.github-status.not-authorized {
+  color: red;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  /* padding-bottom: 1rem; */
+  gap: 1rem;
+}
+
+.disabled-hint {
+  font-size: 0.85rem;
+  color: gray;
+  margin-top: 4px;
+}
+
+/* { Modal } */
+
+.settings-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.settings-modal-content {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  width: 500px;
+  max-width: 90%;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 1.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
