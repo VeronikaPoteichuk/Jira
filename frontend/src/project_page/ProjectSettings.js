@@ -2,9 +2,15 @@ import React, { useState, useEffect } from "react";
 import axiosInstance from "../api/axios";
 import "./style.css";
 
+const extractUserRepo = url => {
+  const match = url.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)(\.git)?$/i);
+  if (!match) return null;
+  return `${match[1]}/${match[2].replace(/\.git$/, "")}`;
+};
+
 const ProjectSettings = ({ projectId }) => {
-  const [githubRepo, setGithubRepo] = useState("");
-  const [initialRepo, setInitialRepo] = useState("");
+  const [repoUrl, setRepoUrl] = useState("");
+  const [initialRepoUrl, setInitialRepoUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const [isValidating, setIsValidating] = useState(false);
   const [validationError, setValidationError] = useState("");
@@ -16,8 +22,8 @@ const ProjectSettings = ({ projectId }) => {
     const fetchProject = async () => {
       try {
         const res = await axiosInstance.get(`/api/projects/${projectId}/`);
-        setGithubRepo(res.data.github_repo || "");
-        setInitialRepo(res.data.github_repo || "");
+        setRepoUrl(res.data.github_repo || "");
+        setInitialRepoUrl(res.data.github_repo || "");
       } catch (err) {
         console.error("Project loading error:", err);
       } finally {
@@ -56,13 +62,13 @@ const ProjectSettings = ({ projectId }) => {
 
     try {
       const token = localStorage.getItem("github_token");
+      if (!token) throw new Error("Missing GitHub token. Please sign in.");
 
-      if (!token) {
-        throw new Error("Missing GitHub token. Please sign in.");
-      }
+      const userRepo = extractUserRepo(repoUrl);
+      if (!userRepo) throw new Error("Invalid GitHub URL format.");
 
       const res = await axiosInstance.post("/api/github/validate_repo_access/", {
-        repo: githubRepo,
+        repo: userRepo,
         token,
       });
 
@@ -73,7 +79,7 @@ const ProjectSettings = ({ projectId }) => {
       return true;
     } catch (err) {
       console.error("Validation error:", err);
-      setValidationError("Unable to access repository. Make sure it exists and you are logged in.");
+      setValidationError(err.message || "Validation failed.");
       return false;
     } finally {
       setIsValidating(false);
@@ -86,10 +92,10 @@ const ProjectSettings = ({ projectId }) => {
 
     try {
       await axiosInstance.patch(`/api/projects/${projectId}/`, {
-        github_repo: githubRepo,
+        github_repo: repoUrl,
       });
       alert("The repository was saved successfully!");
-      setInitialRepo(githubRepo);
+      setInitialRepoUrl(repoUrl);
     } catch (err) {
       alert("Error saving repository.");
       console.error(err);
@@ -103,14 +109,7 @@ const ProjectSettings = ({ projectId }) => {
       <h2>Project settings</h2>
 
       <div className="github-login-block">
-        <div
-        // href="http://localhost:8000/api/github/login/"
-        // target="_blank"
-        // rel="noopener noreferrer"
-        // className="github-login-link"
-        >
-          GitHub
-        </div>
+        <div>GitHub</div>
         <div style={{ marginTop: "0.5rem" }}>
           {isGitHubAuthorized ? (
             <span className="github-status authorized">
@@ -118,7 +117,7 @@ const ProjectSettings = ({ projectId }) => {
             </span>
           ) : (
             <span className="github-status not-authorized">
-              ❌ Not signed in
+              ❌ Not signed in{" "}
               <a
                 href="http://localhost:8000/api/github/login/"
                 target="_blank"
@@ -133,12 +132,12 @@ const ProjectSettings = ({ projectId }) => {
       </div>
 
       <div className="repo-input-block">
-        <label>GitHub repository (user/repo):</label>
+        <label>GitHub repository URL:</label>
         <input
           type="text"
-          value={githubRepo}
-          onChange={e => setGithubRepo(e.target.value)}
-          placeholder="for example, VeronikaPoteichuk/Blog"
+          value={repoUrl}
+          onChange={e => setRepoUrl(e.target.value)}
+          placeholder="https://github.com/user/repo.git"
           disabled={!isGitHubAuthorized}
         />
         {!isGitHubAuthorized && (
@@ -150,7 +149,7 @@ const ProjectSettings = ({ projectId }) => {
 
       <button
         onClick={handleSave}
-        disabled={githubRepo === initialRepo || isValidating || !isGitHubAuthorized}
+        disabled={repoUrl === initialRepoUrl || isValidating || !isGitHubAuthorized}
         className="save-button"
       >
         {isValidating ? "Access check..." : "Save"}
