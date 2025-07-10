@@ -16,6 +16,12 @@ from users.views_auth import LoginView, LogoutView, GoogleAuthView
 import projects.urls
 import boards.urls
 from boards.views import ProjectBoardsAPIView
+from projects.github_auth import (
+    GitHubLoginView,
+    GitHubCallbackView,
+    ValidateGitHubRepoAccessView,
+    github_user_info,
+)
 
 
 @ensure_csrf_cookie
@@ -47,6 +53,14 @@ urlpatterns = [
     ),
     path("api/", include("projects.urls")),
     path("api/", include("boards.urls")),
+    path("api/github/login/", GitHubLoginView.as_view(), name="github-login"),
+    path("api/github/callback/", GitHubCallbackView.as_view(), name="github-callback"),
+    path(
+        "api/github/validate_repo_access/",
+        ValidateGitHubRepoAccessView.as_view(),
+        name="github-validate-repo",
+    ),
+    path("api/github/user-info/", github_user_info, name="github-user-info"),
 ]
 
 

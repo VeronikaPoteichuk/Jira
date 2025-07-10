@@ -12,6 +12,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
+from .utils import create_github_branch, create_pull_request
+import requests
 
 
 class BoardViewSet(ModelViewSet):
@@ -87,7 +89,20 @@ class TaskViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        task = serializer.save(author=self.request.user)
+
+        task = serializer.save(author=request.user)
+
+        if not task.id_in_board:
+            board = task.column.board
+            last_id = (
+                Task.objects.filter(column__board=board).aggregate(
+                    max_id=Max("id_in_board")
+                )["max_id"]
+                or 0
+            )
+            task.id_in_board = last_id + 1
+            task.save()
+
         read_serializer = TaskReadSerializer(
             task, context=self.get_serializer_context()
         )
@@ -142,6 +157,46 @@ class TaskViewSet(ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
+    @action(detail=True, methods=["post"])
+    def create_github_branch(self, request, pk=None):
+        task = self.get_object()
+        repo = request.data.get("repo")
+        if not repo:
+            return Response({"detail": "Repository not specified."}, status=400)
+
+        title_slug = task.title.lower().replace(" ", "-")
+        branch_name = f"TV-{task.id_in_board}-{title_slug}"
+
+        try:
+            branch_info = create_github_branch(repo, branch_name)
+            task.branch_name = branch_name
+            task.save()
+
+            # try:
+            #     pr_data = create_pull_request(
+            #         repo,
+            #         head=branch_name,
+            #         title=f"[TV-{task.id_in_board}] {task.title}",
+            #         body=task.description or ""
+            #     )
+            # except requests.HTTPError as e:
+            #     return Response({
+            #         "branch": branch_name,
+            #         "branch_url": branch_info["url"],
+            #         "pr_error": e.response.json(),  # или .text
+            #     }, status=207)
+            return Response(
+                {
+                    "branch": branch_name,
+                    "branch_url": branch_info["url"],
+                    # "pr_url": pr_data["html_url"],
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        except requests.HTTPError as e:
+            print("GitHub brunch creation failed:", e.response.text)
+            return Response({"error": str(e)}, status=400)
 
 
 class CommentViewSet(ModelViewSet):

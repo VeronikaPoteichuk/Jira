@@ -7,7 +7,7 @@ import { useDeleteModal } from "../hooks/DeleteModalContext";
 
 const TaskCard = ({ task, onDelete, onClick, onUpdate }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: `task:${task.column}:${task.id}`,
+    id: `task:${task.column}:${task.id_in_board}`,
   });
 
   const [isEditing, setIsEditing] = useState(false);
@@ -84,7 +84,7 @@ const TaskCard = ({ task, onDelete, onClick, onUpdate }) => {
       {...(isEditing ? {} : listeners)}
       className="task-card hover-group"
       data-dragging={isDragging}
-      onClick={() => onClick(task.id)}
+      onClick={() => onClick(task.id_in_board)}
     >
       <div className="task-top-bar" onClick={() => onClick(task)}>
         {!isEditing && (
@@ -162,7 +162,7 @@ const TaskCard = ({ task, onDelete, onClick, onUpdate }) => {
       <div className="task-meta">
         <input type="checkbox" defaultChecked onClick={e => e.stopPropagation()} />
         <span className="task-id">
-          {task.project_name}-{task.id}
+          {task.board_name}-{task.id_in_board}
         </span>
       </div>
     </div>

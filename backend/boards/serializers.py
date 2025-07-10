@@ -7,13 +7,13 @@ class TaskWriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = "__all__"
+        exclude = ("id_in_board",)
 
 
 class TaskReadSerializer(serializers.ModelSerializer):
     column = serializers.SerializerMethodField()
     author_username = serializers.CharField(source="author.username", read_only=True)
-    project_name = serializers.SerializerMethodField()
+    board_name = serializers.SerializerMethodField()
     key = serializers.SerializerMethodField()
 
     class Meta:
@@ -23,17 +23,17 @@ class TaskReadSerializer(serializers.ModelSerializer):
     def get_column(self, obj):
         return {"id": obj.column.id, "name": obj.column.name} if obj.column else None
 
-    def get_project_name(self, obj):
+    def get_board_name(self, obj):
         try:
-            return obj.column.board.project.name
+            return obj.column.board.name
         except AttributeError:
             return None
 
     def get_key(self, obj):
         try:
-            return f"{obj.column.board.project.name}-{obj.id}"
+            return f"{obj.column.board.name}-{obj.id_in_board}"
         except AttributeError:
-            return f"undefined-{obj.id}"
+            return f"undefined-{obj.id_in_board}"
 
 
 class ColumnSerializer(serializers.ModelSerializer):
@@ -47,10 +47,10 @@ class ColumnSerializer(serializers.ModelSerializer):
 class BoardSerializer(serializers.ModelSerializer):
     columns = ColumnSerializer(many=True, read_only=True)
     task_count = serializers.SerializerMethodField()
+    github_repo = serializers.CharField(source="project.github_repo", read_only=True)
 
     class Meta:
         model = Board
-        # fields = "__all__"
         exclude = ["created_by"]
 
     def get_task_count(self, obj):

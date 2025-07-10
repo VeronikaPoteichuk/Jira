@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { X, Check } from "lucide-react";
+import { X, Check, GitBranchPlus } from "lucide-react";
 import axiosInstance from "../api/axios";
 import CommentEditor from "./CommentEditor";
 import DOMPurify from "dompurify";
 
-const EditTaskModal = ({ task, onClose, onSave }) => {
+const EditTaskModal = ({ task, onClose, onSave, githubRepo }) => {
   const [title, setTitle] = useState("");
   const [activeTab, setActiveTab] = useState("Comments");
   const [description, setDescription] = useState("");
@@ -227,7 +227,7 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
               <h4>Details</h4>
               <ul>
                 <li>
-                  <strong>Executor:</strong> {task.author_username || "—"}
+                  <strong>Owner:</strong> {task.author_username || "—"}
                 </li>
                 <li>
                   <strong>Marks:</strong> No
@@ -237,6 +237,33 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
                 </li>
                 <li>
                   <strong>Team:</strong> No
+                </li>{" "}
+                <li>
+                  <strong>Development:</strong>
+                  <button
+                    onClick={async () => {
+                      if (!githubRepo) {
+                        alert("Repository not set for project.");
+                        return;
+                      }
+
+                      try {
+                        const res = await axiosInstance.post(
+                          `/api/tasks/${task.id}/create_github_branch/`,
+                          {
+                            repo: githubRepo,
+                          },
+                        );
+                        alert(`Branch created:\n${res.data.branch_url}`);
+                      } catch (err) {
+                        alert("Error creating branch.");
+                        console.error(err);
+                      }
+                    }}
+                  >
+                    <GitBranchPlus style={{ strokeWidth: "1.5", width: "20" }} /> Create GitHub
+                    Branch
+                  </button>
                 </li>
               </ul>
             </aside>
