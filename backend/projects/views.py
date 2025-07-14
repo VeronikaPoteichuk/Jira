@@ -61,3 +61,31 @@ class ProjectViewSet(ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
         return super().destroy(request, *args, **kwargs)
+
+    @action(detail=True, methods=["post"], url_path="remove-member")
+    def remove_member(self, request, pk=None):
+        """
+        Remove user from project participants (only for creator)
+        """
+        project = self.get_object()
+        if project.created_by != request.user:
+            return Response(
+                {"detail": "Only the creator can remove members."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        email = request.data.get("email")
+        if not email:
+            return Response(
+                {"detail": "Email is required."}, status=status.HTTP_400_BAD_REQUEST
+            )
+        User = get_user_model()
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+        project.members.remove(user)
+        return Response(
+            {"detail": f"User {email} removed from project."}, status=status.HTTP_200_OK
+        )

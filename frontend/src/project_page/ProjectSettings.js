@@ -47,6 +47,18 @@ const ProjectSettings = ({ projectId }) => {
     }
   };
 
+  const handleRemoveMember = async email => {
+    if (!window.confirm(`Remove ${email} from project members?`)) return;
+    try {
+      await axiosInstance.post(`/api/projects/${projectId}/remove-member/`, { email });
+      setMembers(members.filter(m => m !== email));
+    } catch (err) {
+      alert(
+        err.response?.data?.detail || "Failed to remove user. Only the creator can remove members.",
+      );
+    }
+  };
+
   useEffect(() => {
     const fetchProject = async () => {
       try {
@@ -189,8 +201,12 @@ const ProjectSettings = ({ projectId }) => {
 
           <tr>
             <td>Project members</td>
-            <td>
-              <form className="add-member-form" onSubmit={handleAddMember}>
+            <td colSpan={2}>
+              <form
+                className="add-member-form"
+                onSubmit={handleAddMember}
+                style={{ display: "flex", gap: 12 }}
+              >
                 <input
                   type="email"
                   placeholder="Add member by email"
@@ -198,16 +214,14 @@ const ProjectSettings = ({ projectId }) => {
                   onChange={e => setNewMemberEmail(e.target.value)}
                   required
                   disabled={isAddingMember}
+                  style={{ width: "400px", marginRight: "0.5rem" }}
                 />
+                <button type="submit" disabled={isAddingMember || !newMemberEmail}>
+                  {isAddingMember ? "Adding..." : "Add"}
+                </button>
               </form>
               {addMemberError && <div className="error-message">{addMemberError}</div>}
               {addMemberSuccess && <div className="success-message">{addMemberSuccess}</div>}
-            </td>
-            <td>
-              {" "}
-              <button type="submit" disabled={isAddingMember || !newMemberEmail}>
-                {isAddingMember ? "Adding..." : "Add"}
-              </button>
             </td>
           </tr>
 
@@ -218,7 +232,25 @@ const ProjectSettings = ({ projectId }) => {
                 {members.length === 0 ? (
                   <li>No members yet.</li>
                 ) : (
-                  members.map(email => <li key={email}>{email}</li>)
+                  members.map(email => (
+                    <li
+                      key={email}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <span>{email}</span>
+                      <button
+                        type="button"
+                        className="remove-member-btn"
+                        onClick={() => handleRemoveMember(email)}
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  ))
                 )}
               </ul>
             </td>
