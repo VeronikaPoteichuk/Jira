@@ -9,7 +9,7 @@ User = get_user_model()
 class ProjectSerializer(serializers.ModelSerializer):
     board_count = serializers.SerializerMethodField()
     members = serializers.SlugRelatedField(
-        many=True, slug_field="email", queryset=User.objects.all(), required=False
+        many=True, slug_field="email", read_only=True
     )
 
     class Meta:
@@ -24,11 +24,10 @@ class ProjectSerializer(serializers.ModelSerializer):
             "github_token",
             "members",
         ]
-        read_only_fields = ["github_token"]
 
     def update(self, instance, validated_data):
         request = self.context.get("request")
-        token = request.session.get("github_token")
+        token = request.session.get("github_token") or request.data.get("token")
 
         github_repo = validated_data.get("github_repo")
         if github_repo and token:

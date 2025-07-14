@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import axiosInstance from "../api/axios";
 import "./style.css";
 
@@ -63,7 +64,8 @@ const ProjectSettings = ({ projectId }) => {
     const fetchProject = async () => {
       try {
         const res = await axiosInstance.get(`/api/projects/${projectId}/`);
-        setRepoUrl(res.data.github_repo || "");
+        const savedRepo = res.data.github_repo || "";
+        setRepoUrl(savedRepo ? `https://github.com/${savedRepo}` : "");
         setInitialRepoUrl(res.data.github_repo || "");
         setMembers(res.data.members || []);
       } catch (err) {
@@ -133,11 +135,12 @@ const ProjectSettings = ({ projectId }) => {
     if (!isValid) return;
 
     try {
+      const userRepo = extractUserRepo(repoUrl);
       await axiosInstance.patch(`/api/projects/${projectId}/`, {
-        github_repo: repoUrl,
+        github_repo: userRepo,
       });
       alert("The repository was saved successfully!");
-      setInitialRepoUrl(repoUrl);
+      setInitialRepoUrl(userRepo);
     } catch (err) {
       alert("Error saving repository.");
       console.error(err);
@@ -192,7 +195,9 @@ const ProjectSettings = ({ projectId }) => {
             <td>
               <button
                 onClick={handleSave}
-                disabled={repoUrl === initialRepoUrl || isValidating || !isGitHubAuthorized}
+                disabled={
+                  extractUserRepo(repoUrl) === initialRepoUrl || isValidating || !isGitHubAuthorized
+                }
               >
                 {isValidating ? "Access check..." : "Save"}
               </button>
