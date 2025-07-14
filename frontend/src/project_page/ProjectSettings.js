@@ -18,12 +18,42 @@ const ProjectSettings = ({ projectId }) => {
   const [isGitHubAuthorized, setIsGitHubAuthorized] = useState(false);
   const [githubUsername, setGitHubUsername] = useState("");
 
+  const [members, setMembers] = useState([]);
+  const [newMemberEmail, setNewMemberEmail] = useState("");
+  const [addMemberError, setAddMemberError] = useState("");
+  const [addMemberSuccess, setAddMemberSuccess] = useState("");
+  const [isAddingMember, setIsAddingMember] = useState(false);
+
+  const handleAddMember = async e => {
+    e.preventDefault();
+    setAddMemberError("");
+    setAddMemberSuccess("");
+    setIsAddingMember(true);
+    try {
+      const res = await axiosInstance.post(`/api/projects/${projectId}/add-member/`, {
+        email: newMemberEmail,
+      });
+      setAddMemberSuccess(res.data.detail || "User added!");
+      setNewMemberEmail("");
+      const projectRes = await axiosInstance.get(`/api/projects/${projectId}/`);
+      setMembers(projectRes.data.members || []);
+    } catch (err) {
+      setAddMemberError(
+        err.response?.data?.detail ||
+          "Failed to add user. Make sure the email is correct and you are the project creator.",
+      );
+    } finally {
+      setIsAddingMember(false);
+    }
+  };
+
   useEffect(() => {
     const fetchProject = async () => {
       try {
         const res = await axiosInstance.get(`/api/projects/${projectId}/`);
         setRepoUrl(res.data.github_repo || "");
         setInitialRepoUrl(res.data.github_repo || "");
+        setMembers(res.data.members || []);
       } catch (err) {
         console.error("Project loading error:", err);
       } finally {
@@ -107,53 +137,94 @@ const ProjectSettings = ({ projectId }) => {
   return (
     <div className="project-settings">
       <h2>Project settings</h2>
+      <table className="settings-table">
+        <tbody>
+          <tr>
+            <td>GitHub</td>
+            <td colSpan={2}>
+              {isGitHubAuthorized ? (
+                <span className="github-status authorized">
+                  ✅ Signed in as <strong>{githubUsername}</strong>
+                </span>
+              ) : (
+                <span className="github-status not-authorized">
+                  ❌ Not signed in{" "}
+                  <a
+                    href="http://localhost:8000/api/github/login/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="github-login-link"
+                  >
+                    Add GitHub
+                  </a>
+                </span>
+              )}
+            </td>
+          </tr>
 
-      <div className="github-login-block">
-        <div>GitHub</div>
-        <div style={{ marginTop: "0.5rem" }}>
-          {isGitHubAuthorized ? (
-            <span className="github-status authorized">
-              ✅ Signed in as <strong>{githubUsername}</strong>
-            </span>
-          ) : (
-            <span className="github-status not-authorized">
-              ❌ Not signed in{" "}
-              <a
-                href="http://localhost:8000/api/github/login/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="github-login-link"
+          <tr>
+            <td>GitHub repository URL</td>
+            <td>
+              <input
+                type="text"
+                value={repoUrl}
+                onChange={e => setRepoUrl(e.target.value)}
+                placeholder="https://github.com/user/repo.git"
+                disabled={!isGitHubAuthorized}
+              />
+              {!isGitHubAuthorized && (
+                <p className="disabled-hint">Please sign in to GitHub to link a repository.</p>
+              )}
+              {validationError && <div className="error-message">{validationError}</div>}
+            </td>
+            <td>
+              <button
+                onClick={handleSave}
+                disabled={repoUrl === initialRepoUrl || isValidating || !isGitHubAuthorized}
               >
-                Add GitHub
-              </a>
-            </span>
-          )}
-        </div>
-      </div>
+                {isValidating ? "Access check..." : "Save"}
+              </button>
+            </td>
+          </tr>
 
-      <div className="repo-input-block">
-        <label>GitHub repository URL:</label>
-        <input
-          type="text"
-          value={repoUrl}
-          onChange={e => setRepoUrl(e.target.value)}
-          placeholder="https://github.com/user/repo.git"
-          disabled={!isGitHubAuthorized}
-        />
-        {!isGitHubAuthorized && (
-          <p className="disabled-hint">Please sign in to GitHub to link a repository.</p>
-        )}
-      </div>
+          <tr>
+            <td>Project members</td>
+            <td>
+              <form className="add-member-form" onSubmit={handleAddMember}>
+                <input
+                  type="email"
+                  placeholder="Add member by email"
+                  value={newMemberEmail}
+                  onChange={e => setNewMemberEmail(e.target.value)}
+                  required
+                  disabled={isAddingMember}
+                />
+              </form>
+              {addMemberError && <div className="error-message">{addMemberError}</div>}
+              {addMemberSuccess && <div className="success-message">{addMemberSuccess}</div>}
+            </td>
+            <td>
+              {" "}
+              <button type="submit" disabled={isAddingMember || !newMemberEmail}>
+                {isAddingMember ? "Adding..." : "Add"}
+              </button>
+            </td>
+          </tr>
 
-      {validationError && <div className="error-message">{validationError}</div>}
-
-      <button
-        onClick={handleSave}
-        disabled={repoUrl === initialRepoUrl || isValidating || !isGitHubAuthorized}
-        className="save-button"
-      >
-        {isValidating ? "Access check..." : "Save"}
-      </button>
+          <tr>
+            <td>Current members</td>
+            <td colSpan={2}>
+              <ul className="members-list">
+                {members.length === 0 ? (
+                  <li>No members yet.</li>
+                ) : (
+                  members.map(email => <li key={email}>{email}</li>)
+                )}
+              </ul>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 };

@@ -1,10 +1,16 @@
 from rest_framework import serializers
 from .models import Project
 from .utils import validate_github_repo_access
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class ProjectSerializer(serializers.ModelSerializer):
     board_count = serializers.SerializerMethodField()
+    members = serializers.SlugRelatedField(
+        many=True, slug_field="email", queryset=User.objects.all(), required=False
+    )
 
     class Meta:
         model = Project
@@ -16,6 +22,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             "board_count",
             "github_repo",
             "github_token",
+            "members",
         ]
         read_only_fields = ["github_token"]
 
