@@ -242,17 +242,17 @@ const Board = () => {
           col.id === columnId
             ? {
                 ...col,
-                tasks: col.tasks.filter(task => task.id_in_board !== taskId),
+                tasks: col.tasks.filter(task => task.id !== taskId),
               }
             : col,
         ),
       );
 
-      if (editingTask?.id_in_board === taskId) {
+      if (editingTask?.id === taskId) {
         setEditingTask(null);
       }
 
-      if (activeTask?.id_in_board === taskId) {
+      if (activeTask?.id === taskId) {
         setActiveTask(null);
       }
     } catch (error) {

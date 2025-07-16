@@ -12,8 +12,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from .utils import create_github_branch, create_pull_request
+from .utils import create_github_branch
 import requests
+from django.db import models
 
 
 class BoardViewSet(ModelViewSet):
@@ -22,7 +23,10 @@ class BoardViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         return (
-            Board.objects.filter(project__created_by=user)
+            Board.objects.filter(
+                models.Q(project__created_by=user) | models.Q(project__members=user)
+            )
+            .distinct()
             .select_related("project", "created_by")
             .prefetch_related(
                 "columns",
@@ -173,24 +177,10 @@ class TaskViewSet(ModelViewSet):
             task.branch_name = branch_name
             task.save()
 
-            # try:
-            #     pr_data = create_pull_request(
-            #         repo,
-            #         head=branch_name,
-            #         title=f"[TV-{task.id_in_board}] {task.title}",
-            #         body=task.description or ""
-            #     )
-            # except requests.HTTPError as e:
-            #     return Response({
-            #         "branch": branch_name,
-            #         "branch_url": branch_info["url"],
-            #         "pr_error": e.response.json(),  # или .text
-            #     }, status=207)
             return Response(
                 {
                     "branch": branch_name,
                     "branch_url": branch_info["url"],
-                    # "pr_url": pr_data["html_url"],
                 },
                 status=status.HTTP_201_CREATED,
             )

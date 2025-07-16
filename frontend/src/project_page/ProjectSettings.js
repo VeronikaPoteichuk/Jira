@@ -76,14 +76,8 @@ const ProjectSettings = ({ projectId }) => {
     };
 
     const checkGitHubAuth = async () => {
-      const token = localStorage.getItem("github_token");
-      if (!token) {
-        setIsGitHubAuthorized(false);
-        return;
-      }
-
       try {
-        const res = await axiosInstance.get(`/api/github/user-info/?token=${token}`);
+        const res = await axiosInstance.get(`/api/github/user-info/`);
         if (res.data.login) {
           setGitHubUsername(res.data.login);
           setIsGitHubAuthorized(true);
@@ -101,19 +95,19 @@ const ProjectSettings = ({ projectId }) => {
   }, [projectId]);
 
   const validateRepoAccess = async () => {
+    if (!isGitHubAuthorized) {
+      setValidationError("Please sign in with GitHub first.");
+      return false;
+    }
+
     setIsValidating(true);
     setValidationError("");
-
     try {
-      const token = localStorage.getItem("github_token");
-      if (!token) throw new Error("Missing GitHub token. Please sign in.");
-
       const userRepo = extractUserRepo(repoUrl);
       if (!userRepo) throw new Error("Invalid GitHub URL format.");
 
       const res = await axiosInstance.post("/api/github/validate_repo_access/", {
         repo: userRepo,
-        token,
       });
 
       if (!res.data.valid) {
@@ -123,7 +117,7 @@ const ProjectSettings = ({ projectId }) => {
       return true;
     } catch (err) {
       console.error("Validation error:", err);
-      setValidationError(err.message || "Validation failed.");
+      setValidationError(err.response?.data?.error || err.message || "Validation failed.");
       return false;
     } finally {
       setIsValidating(false);
@@ -165,7 +159,7 @@ const ProjectSettings = ({ projectId }) => {
                 <span className="github-status not-authorized">
                   ❌ Not signed in{" "}
                   <a
-                    href="http://localhost:8000/api/github/login/"
+                    href={`http://localhost:8000/api/github/login/?project_id=${projectId}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="github-login-link"

@@ -21,9 +21,9 @@ class ProjectSerializer(serializers.ModelSerializer):
             "created_at",
             "board_count",
             "github_repo",
-            "github_token",
             "members",
         ]
+        read_only_fields = ["created_by", "github_token"]
 
     def update(self, instance, validated_data):
         request = self.context.get("request")

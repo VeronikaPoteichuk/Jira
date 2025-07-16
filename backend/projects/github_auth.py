@@ -46,9 +46,7 @@ class GitHubCallbackView(View):
             return JsonResponse({"error": "Failed to get token"}, status=400)
 
         request.session["github_token"] = access_token
-        return HttpResponseRedirect(
-            f"http://localhost:3000/github-success?token={access_token}"
-        )
+        return HttpResponseRedirect("http://localhost:3000/github-success")
 
 
 class ValidateGitHubRepoAccessView(APIView):
@@ -71,21 +69,25 @@ class ValidateGitHubRepoAccessView(APIView):
                 )
 
         is_valid = validate_github_repo_access(access_token, repo)
-        request.data.get("token") or request.session.get("github_token")
         return Response({"valid": is_valid})
 
 
 @api_view(["GET"])
 def github_user_info(request):
-    token = request.GET.get("token")
+    token = request.session.get("github_token")
     if not token:
-        return Response({"error": "No token provided"}, status=400)
+        return Response({"error": "Not authenticated with GitHub"}, status=401)
 
-    response = requests.get(
-        "https://api.github.com/user",
-        headers={"Authorization": f"token {token}"},
-        timeout=5,
-    )
-    if response.status_code == 200:
-        return Response(response.json())
-    return Response({"error": "Invalid token"}, status=401)
+    try:
+        response = requests.get(
+            "https://api.github.com/user",
+            headers={"Authorization": f"token {token}"},
+            timeout=5,
+        )
+        data = response.json()
+        if response.status_code == 200 and "login" in data:
+            return Response({"login": data["login"]})
+        else:
+            return Response({"error": "Invalid token"}, status=401)
+    except requests.RequestException:
+        return Response({"error": "GitHub API request failed"}, status=500)

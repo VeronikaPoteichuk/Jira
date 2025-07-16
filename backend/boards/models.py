@@ -3,9 +3,6 @@ from django.db.models import Max
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
-from django.core.exceptions import ValidationError
-from django.db.models import Max
-
 
 class Board(models.Model):
     name = models.CharField(max_length=255)
@@ -37,7 +34,9 @@ from django.db.models import Max
 
 class Task(models.Model):
     id_in_board = models.PositiveIntegerField()
-    column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="tasks")
+    column = models.ForeignKey(
+        Column, on_delete=models.CASCADE, related_name="tasks", db_index=True
+    )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     author = models.ForeignKey(
@@ -46,6 +45,7 @@ class Task(models.Model):
         null=True,
         blank=True,
         on_delete=models.CASCADE,
+        db_index=True,
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -60,19 +60,20 @@ class Task(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.id_in_board:
-            board = self.column.board
-            last_id = (
-                Task.objects.filter(column__board=board).aggregate(
-                    max_id=Max("id_in_board")
-                )["max_id"]
-                or 0
-            )
-            self.id_in_board = last_id + 1
+            if self.column is not None:
+                board = self.column.board
+                last_id = (
+                    Task.objects.filter(column__board=board).aggregate(
+                        max_id=Max("id_in_board")
+                    )["max_id"]
+                    or 0
+                )
+                self.id_in_board = last_id + 1
         self.full_clean()
         super().save(*args, **kwargs)
 
     def clean(self):
-        if not self.column_id:
+        if not self.column:
             return
         board = self.column.board
         existing = Task.objects.filter(

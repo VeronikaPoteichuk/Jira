@@ -27,25 +27,3 @@ def create_github_branch(repo, branch_name, base_branch="main"):
         "url": f"https://github.com/{repo}/tree/feature/{branch_name}",
         "sha": sha,
     }
-
-
-def create_pull_request(repo, head, base="main", title="", body=""):
-    headers = {
-        "Authorization": f"token {settings.GITHUB_TOKEN}",
-        "Accept": "application/vnd.github+json",
-    }
-
-    url = f"{GITHUB_API}/repos/{repo}/pulls"
-    response = requests.post(
-        url,
-        headers=headers,
-        json={
-            "title": title or f"PR for {head}",
-            "head": head,
-            "base": base,
-            "body": body,
-        },
-        timeout=5,
-    )
-    response.raise_for_status()
-    return response.json()

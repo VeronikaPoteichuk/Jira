@@ -560,6 +560,19 @@
   align-items: flex-end;
 }
 
+.menu-button-more {
+  border: none;
+  background: transparent;
+  width: 35px;
+  height: 35px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.menu-button-more:hover {
+  background-color: #dbe6fb;
+}
+
 .action-menu {
   background: white;
   border: 1px solid #ddd;
