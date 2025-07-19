@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { X, Check } from "lucide-react";
+import { X, Check, GitBranchPlus } from "lucide-react";
 import axiosInstance from "../api/axios";
 import CommentEditor from "./CommentEditor";
 import DOMPurify from "dompurify";
 
-const EditTaskModal = ({ task, onClose, onSave }) => {
+const EditTaskModal = ({ task, onClose, onSave, githubRepo }) => {
   const [title, setTitle] = useState("");
   const [activeTab, setActiveTab] = useState("Comments");
   const [description, setDescription] = useState("");
@@ -12,6 +12,9 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
   const [loadingComments, setLoadingComments] = useState(true);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [editedDescription, setEditedDescription] = useState("");
+  const [history, setHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+  const [filter, setFilter] = useState("all");
 
   useEffect(() => {
     setTitle(task.title || "");
@@ -33,6 +36,23 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
 
     if (activeTab === "Comments") {
       fetchComments();
+    }
+  }, [task.id, activeTab]);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const res = await axiosInstance.get(`/api/tasks/${task.id}/history/`);
+        setHistory(res.data);
+      } catch (error) {
+        console.error("Error loading history:", error);
+      } finally {
+        setLoadingHistory(false);
+      }
+    };
+
+    if (activeTab === "History") {
+      fetchHistory();
     }
   }, [task.id, activeTab]);
 
@@ -93,7 +113,8 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
   const isDirty =
     title.trim() !== (task.title || "").trim() ||
     editedDescription.trim() !== (task.description || "").trim();
-
+  const filteredHistory =
+    filter === "all" ? history : history.filter(entry => entry.action === filter);
   const TABS = ["Comments", "History", "Work log"];
 
   return (
@@ -173,8 +194,25 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
                             {comments.length === 0 && <p>There are no comments yet.</p>}
                             {comments.map(c => (
                               <div key={c.id} className="comment-item">
-                                <strong>{c.author_username}:</strong>
+                                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                  <strong>{c.author_username}:</strong>
+                                  <small>
+                                    {" "}
+                                    {new Date(c.created_at).toLocaleDateString("en-EN", {
+                                      day: "2-digit",
+                                      month: "long",
+                                      year: "numeric",
+                                    })}{" "}
+                                    in{" "}
+                                    {new Date(c.created_at).toLocaleTimeString("en-EN", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      hour12: false,
+                                    })}
+                                  </small>
+                                </div>
                                 <div
+                                  className="comment-text"
                                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(c.text) }}
                                 />
                               </div>
@@ -202,8 +240,79 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
                   </>
                 )}
 
-                {activeTab === "History" && <p>The change history will be here.</p>}
-                {activeTab === "Work log" && <p>The change history will be here.</p>}
+                {activeTab === "History" && (
+                  <>
+                    {loadingHistory ? (
+                      <p>Loading history...</p>
+                    ) : history.length === 0 ? (
+                      <p>No history yet.</p>
+                    ) : (
+                      <div>
+                        <div style={{ marginBottom: "0.5rem" }}>
+                          <label htmlFor="filter">Filter</label>{" "}
+                          <select
+                            id="filter"
+                            className="history-filter"
+                            value={filter}
+                            onChange={e => setFilter(e.target.value)}
+                          >
+                            <option value="all">All</option>
+                            {[...new Set(history.map(h => h.action))].map(action => (
+                              <option key={action} value={action}>
+                                {action}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <ul className="task-history-list">
+                          {filteredHistory.map(entry => (
+                            <li key={entry.id} className="task-history-item">
+                              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                <div
+                                  style={{
+                                    fontSize: "16px",
+                                    color: "#283c60",
+                                    fontWeight: "bolder",
+                                  }}
+                                >
+                                  {entry.action}
+                                </div>
+                                <small>
+                                  {" "}
+                                  {new Date(entry.created_at).toLocaleDateString("en-EN", {
+                                    day: "2-digit",
+                                    month: "long",
+                                    year: "numeric",
+                                  })}{" "}
+                                  in{" "}
+                                  {new Date(entry.created_at).toLocaleTimeString("en-EN", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: false,
+                                  })}
+                                </small>{" "}
+                              </div>
+                              <div
+                                className="history-details"
+                                dangerouslySetInnerHTML={{
+                                  __html: DOMPurify.sanitize(
+                                    entry.details.replace(
+                                      /\[([^\]]+)\]\(([^)]+)\)/g,
+                                      '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>',
+                                    ),
+                                  ),
+                                }}
+                              />
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {activeTab === "Work log" && <p>The change work logs will be here.</p>}
               </div>
 
               <div className="modal-task-buttons">
@@ -227,7 +336,7 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
               <h4>Details</h4>
               <ul>
                 <li>
-                  <strong>Executor:</strong> {task.author_username || "—"}
+                  <strong>Owner:</strong> {task.author_username || "—"}
                 </li>
                 <li>
                   <strong>Marks:</strong> No
@@ -237,6 +346,33 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
                 </li>
                 <li>
                   <strong>Team:</strong> No
+                </li>{" "}
+                <li>
+                  <strong>Development:</strong>
+                  <button
+                    onClick={async () => {
+                      if (!githubRepo) {
+                        alert("Repository not set for project.");
+                        return;
+                      }
+
+                      try {
+                        const res = await axiosInstance.post(
+                          `/api/tasks/${task.id}/create_github_branch/`,
+                          {
+                            repo: githubRepo,
+                          },
+                        );
+                        alert(`Branch created:\n${res.data.branch_url}`);
+                      } catch (err) {
+                        alert("Error creating branch.");
+                        console.error(err);
+                      }
+                    }}
+                  >
+                    <GitBranchPlus style={{ strokeWidth: "1.5", width: "20" }} /> Create GitHub
+                    Branch
+                  </button>
                 </li>
               </ul>
             </aside>

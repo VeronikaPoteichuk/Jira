@@ -6,7 +6,6 @@ import { useDeleteModal } from "../hooks/DeleteModalContext";
 const Column = ({ column, isDragging, onUpdateName, onDelete }) => {
   const [isEditing, setIsEditing] = useState(column.isNew || false);
   const [editedName, setEditedName] = useState(column.name || "");
-  // const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { openModal: openDeleteModal } = useDeleteModal();
 
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({

@@ -294,17 +294,19 @@ const ProjectTasks = () => {
                 <tr key={task.id}>
                   <td>
                     <button className="task-key-button" onClick={() => openTaskModal(task)}>
-                      {task.project_name && task.id ? `${task.project_name}-${task.id}` : ""}
+                      {task.board_name && task.id_in_board
+                        ? `${task.board_name}-${task.id_in_board}`
+                        : ""}
                     </button>
                   </td>
                   <td onClick={() => handleTitleClick(task)} className="clickable-cell">
-                    {editingTaskId === task.id ? (
+                    {editingTaskId === task.id_in_board ? (
                       <input
                         type="text"
                         className="edit-task-title-input"
                         value={editingTitle}
                         onChange={handleTitleChange}
-                        onBlur={() => handleTitleBlur(task.id)}
+                        onBlur={() => handleTitleBlur(task.id_in_board)}
                         autoFocus
                       />
                     ) : (
