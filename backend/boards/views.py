@@ -6,6 +6,7 @@ from .serializers import (
     TaskWriteSerializer,
     TaskReadSerializer,
     CommentSerializer,
+    TaskHistorySerializer,
 )
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -132,28 +133,33 @@ class TaskViewSet(ModelViewSet):
     @action(detail=False, methods=["post"])
     def reorder(self, request):
         task_data = request.data.get("tasks", [])
-        task_ids = [item["id"] for item in task_data]
-
-        tasks = list(Task.objects.filter(id__in=task_ids))
-        task_map = {task.id: task for task in tasks}
-
         updated_tasks = []
+
         for item in task_data:
-            task = task_map.get(item["id"])
+            id_in_board = item["id"]
+            column_id = item["column"]
+            order = item["order"]
+
+            try:
+                column = Column.objects.select_related("board").get(id=column_id)
+            except Column.DoesNotExist:
+                continue
+
+            board = column.board
+
+            task = Task.objects.filter(
+                column__board=board, id_in_board=id_in_board
+            ).first()
+
             if task:
-                task.order = item["order"]
-                task.column_id = item["column"]
+                task.order = order
+                task.column = column
                 updated_tasks.append(task)
 
         if updated_tasks:
             Task.objects.bulk_update(updated_tasks, ["order", "column"])
 
-        updated_ids = [task.id for task in updated_tasks]
-        refreshed_tasks = Task.objects.filter(id__in=updated_ids).select_related(
-            "column__board__project", "author", "column"
-        )
-        serializer = TaskReadSerializer(refreshed_tasks, many=True)
-
+        serializer = TaskReadSerializer(updated_tasks, many=True)
         return Response(
             {
                 "detail": "The order of tasks has been updated.",
@@ -170,10 +176,11 @@ class TaskViewSet(ModelViewSet):
             return Response({"detail": "Repository not specified."}, status=400)
 
         title_slug = task.title.lower().replace(" ", "-")
-        branch_name = f"TV-{task.id_in_board}-{title_slug}"
+        branch_suffix = f"TV-{task.id_in_board}-{title_slug}"
+        branch_name = f"feature/{branch_suffix}"
 
         try:
-            branch_info = create_github_branch(repo, branch_name)
+            branch_info = create_github_branch(repo, branch_suffix)
             task.branch_name = branch_name
             task.save()
 
@@ -206,4 +213,12 @@ class ProjectBoardsAPIView(APIView):
     def get(self, request, project_id):
         boards = Board.objects.filter(project_id=project_id)
         serializer = BoardSerializer(boards, many=True)
+        return Response(serializer.data)
+
+
+class TaskHistoryAPIView(APIView):
+    def get(self, request, pk):
+        task = Task.objects.get(pk=pk)
+        history = task.history.order_by("-created_at")
+        serializer = TaskHistorySerializer(history, many=True)
         return Response(serializer.data)

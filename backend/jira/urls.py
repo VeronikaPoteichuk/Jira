@@ -22,6 +22,8 @@ from projects.github_auth import (
     ValidateGitHubRepoAccessView,
     github_user_info,
 )
+from boards.utils import github_webhook
+from boards.views import TaskHistoryAPIView
 
 
 @ensure_csrf_cookie
@@ -61,6 +63,10 @@ urlpatterns = [
         name="github-validate-repo",
     ),
     path("api/github/user-info/", github_user_info, name="github-user-info"),
+    path("webhooks/github/", github_webhook, name="github-webhook"),
+    path(
+        "api/tasks/<int:pk>/history/", TaskHistoryAPIView.as_view(), name="task-history"
+    ),
 ]
 
 

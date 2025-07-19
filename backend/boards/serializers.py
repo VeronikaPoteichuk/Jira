@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Board, Column, Task, Comment
+from .models import Board, Column, Task, Comment, TaskHistory
 
 
 class TaskWriteSerializer(serializers.ModelSerializer):
@@ -10,11 +10,18 @@ class TaskWriteSerializer(serializers.ModelSerializer):
         exclude = ("id_in_board",)
 
 
+class TaskHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TaskHistory
+        fields = "__all__"
+
+
 class TaskReadSerializer(serializers.ModelSerializer):
     column = serializers.SerializerMethodField()
     author_username = serializers.CharField(source="author.username", read_only=True)
     board_name = serializers.SerializerMethodField()
     key = serializers.SerializerMethodField()
+    history = TaskHistorySerializer(many=True, read_only=True)
 
     class Meta:
         model = Task

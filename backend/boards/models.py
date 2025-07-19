@@ -28,10 +28,6 @@ class Column(models.Model):
         return f"Column: {self.name} (Board: {self.board.name})"
 
 
-from django.core.exceptions import ValidationError
-from django.db.models import Max
-
-
 class Task(models.Model):
     id_in_board = models.PositiveIntegerField()
     column = models.ForeignKey(
@@ -94,3 +90,11 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"Comment by {self.author} on {self.task}"
+
+
+class TaskHistory(models.Model):
+    task = models.ForeignKey("Task", related_name="history", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    action = models.CharField(max_length=255)
+    details = models.TextField(blank=True)
+    source = models.CharField(max_length=100, default="system")
