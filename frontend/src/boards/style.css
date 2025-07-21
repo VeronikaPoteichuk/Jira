@@ -787,25 +787,42 @@
 /* { comments } */
 
 .comments-list {
-  display: flex;
-  flex-direction: column;
   gap: 0.2rem;
-  margin-bottom: 1rem;
-  max-height: 300px;
-  overflow-y: auto;
-  overflow-y: hidden;
+  display: flex;
+  flex-direction: column-reverse;
 }
 
-.comments-scroll:hover .comments-list {
+.comments-scroll {
   overflow-y: auto;
+  position: relative;
+  margin-top: 1rem;
+  max-height: 250px;
+}
+
+.comments-scroll::-webkit-scrollbar,
+.task-history-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.comments-scroll::-webkit-scrollbar-thumb,
+.task-history-list::-webkit-scrollbar-thumb {
+  background-color: gray;
+  border-radius: 4px;
+  border-style: inset;
+}
+
+.comments-scroll::-webkit-scrollbar-track,
+.task-history-list::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .comment-item {
-  background: #f4f5f7;
+  border: 1px solid #dfe1e6;
   padding: 0.5rem 0.75rem;
   border-radius: 8px;
   font-size: 14px;
   color: #172b4d;
+  margin-right: 1px;
 }
 
 .comment-text p {
@@ -837,7 +854,7 @@
   margin: 0;
   height: 400px;
   overflow-y: auto;
-  scrollbar-color: gray transparent;
+  /* scrollbar-color: gray transparent; */
 }
 
 .task-history-item {
@@ -854,7 +871,7 @@
 
 .history-details {
   margin: 0.5em 0;
-  color: #314871e3;
+  color: #212328e3;
 }
 
 .history-filter {
@@ -869,6 +886,21 @@
   border-bottom-right-radius: 0;
 }
 
+.history-details em {
+  border: 1px solid gray;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-style: normal;
+}
+
+.task-history-item u {
+  text-decoration: none;
+  font-weight: 550;
+}
+
+.history-details u {
+  font-weight: normal;
+}
 /* { CommentEditor.js} */
 
 .toolbar-comments {

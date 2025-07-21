@@ -1,5 +1,5 @@
 from adrf.viewsets import ModelViewSet
-from .models import Board, Column, Task, Comment
+from .models import Board, Column, Task, Comment, TaskHistory
 from .serializers import (
     BoardSerializer,
     ColumnSerializer,
@@ -108,6 +108,14 @@ class TaskViewSet(ModelViewSet):
             task.id_in_board = last_id + 1
             task.save()
 
+        TaskHistory.objects.create(
+            task=task,
+            action="Created",
+            details=f"<strong>{request.user.username}</strong> created the task in "
+            f"<em>{task.column.name}</em> column.",
+            source="system",
+        )
+
         read_serializer = TaskReadSerializer(
             task, context=self.get_serializer_context()
         )
@@ -127,13 +135,40 @@ class TaskViewSet(ModelViewSet):
         return Response(read_serializer.data, status=status.HTTP_200_OK)
 
     def partial_update(self, request, *args, **kwargs):
-        kwargs["partial"] = True
-        return self.update(request, *args, **kwargs)
+        instance = self.get_object()
+        old_title = instance.title
+        old_description = instance.description
+
+        if old_description == "":
+            old_description = "None"
+
+        response = super().partial_update(request, *args, **kwargs)
+        updated = self.get_object()
+
+        if updated.title != old_title:
+            TaskHistory.objects.create(
+                task=updated,
+                action=f"<strong>{request.user.username}</strong> changed <u>Title</u>",
+                details=f"<u>{old_title}</u> &rArr; <u>{updated.title}</u>.",
+                source="system",
+            )
+        if updated.description != old_description:
+            if updated.description == "":
+                updated.description = "None"
+            TaskHistory.objects.create(
+                task=updated,
+                action=f"<strong>{request.user.username}</strong> changed <u>Description</u>",
+                details=f"<u>{old_description}</u> &rArr; <u>{updated.description}</u>",
+                source="system",
+            )
+
+        return response
 
     @action(detail=False, methods=["post"])
     def reorder(self, request):
         task_data = request.data.get("tasks", [])
         updated_tasks = []
+        move_events = []
 
         for item in task_data:
             id_in_board = item["id"]
@@ -152,14 +187,26 @@ class TaskViewSet(ModelViewSet):
             ).first()
 
             if task:
+                old_column = task.column
                 task.order = order
                 task.column = column
                 updated_tasks.append(task)
+                if old_column != column:
+                    move_events.append((task, old_column, column))
 
         if updated_tasks:
             Task.objects.bulk_update(updated_tasks, ["order", "column"])
 
+        for task, old_column, new_column in move_events:
+            TaskHistory.objects.create(
+                task=task,
+                action=f"<strong>{request.user.username}</strong> moved <u>Status</u>",
+                details=f"<em>{old_column.name}</em> &rArr; <em>{new_column.name}</em>",
+                source="system",
+            )
+
         serializer = TaskReadSerializer(updated_tasks, many=True)
+
         return Response(
             {
                 "detail": "The order of tasks has been updated.",
@@ -219,6 +266,14 @@ class ProjectBoardsAPIView(APIView):
 class TaskHistoryAPIView(APIView):
     def get(self, request, pk):
         task = Task.objects.get(pk=pk)
-        history = task.history.order_by("-created_at")
+        history = task.history.filter(source="github").order_by("-created_at")
         serializer = TaskHistorySerializer(history, many=True)
+        return Response(serializer.data)
+
+
+class TaskWorkLogAPIView(APIView):
+    def get(self, request, pk):
+        task = Task.objects.get(pk=pk)
+        worklog = task.history.filter(source="system").order_by("-created_at")
+        serializer = TaskHistorySerializer(worklog, many=True)
         return Response(serializer.data)

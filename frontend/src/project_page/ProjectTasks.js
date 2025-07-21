@@ -7,7 +7,7 @@ import EditTaskModal from "../boards/EditTaskModal";
 import AddTaskToggle from "../boards/AddTaskToggle";
 import "./style.css";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 15;
 
 const ProjectTasks = () => {
   const [tasks, setTasks] = useState([]);
@@ -29,8 +29,6 @@ const ProjectTasks = () => {
   const fetchTasks = useCallback(async () => {
     try {
       const response = await axiosInstance.get(`/api/boards/${cleanBoardId}/tasks/`);
-      console.log("CleanBoaedId:", cleanBoardId);
-      console.log("Response data:", response.data);
       setTasks(response.data);
     } catch (error) {
       handleApiError(error, "Failed to load tasks.");
@@ -300,13 +298,13 @@ const ProjectTasks = () => {
                     </button>
                   </td>
                   <td onClick={() => handleTitleClick(task)} className="clickable-cell">
-                    {editingTaskId === task.id_in_board ? (
+                    {editingTaskId === task.id ? (
                       <input
                         type="text"
                         className="edit-task-title-input"
                         value={editingTitle}
                         onChange={handleTitleChange}
-                        onBlur={() => handleTitleBlur(task.id_in_board)}
+                        onBlur={() => handleTitleBlur(task.id)}
                         autoFocus
                       />
                     ) : (

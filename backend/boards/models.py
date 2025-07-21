@@ -98,3 +98,6 @@ class TaskHistory(models.Model):
     action = models.CharField(max_length=255)
     details = models.TextField(blank=True)
     source = models.CharField(max_length=100, default="system")
+
+    class Meta:
+        ordering = ["created_at"]

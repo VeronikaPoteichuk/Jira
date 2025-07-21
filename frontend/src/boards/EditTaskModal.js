@@ -15,6 +15,8 @@ const EditTaskModal = ({ task, onClose, onSave, githubRepo }) => {
   const [history, setHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [filter, setFilter] = useState("all");
+  const [workLog, setWorkLog] = useState([]);
+  const [loadingWorkLog, setLoadingWorkLog] = useState(true);
 
   useEffect(() => {
     setTitle(task.title || "");
@@ -51,8 +53,25 @@ const EditTaskModal = ({ task, onClose, onSave, githubRepo }) => {
       }
     };
 
-    if (activeTab === "History") {
+    if (activeTab === "Git history") {
       fetchHistory();
+    }
+  }, [task.id, activeTab]);
+
+  useEffect(() => {
+    const fetchWorkLog = async () => {
+      try {
+        const res = await axiosInstance.get(`/api/tasks/${task.id}/worklog/`);
+        setWorkLog(res.data);
+      } catch (error) {
+        console.error("Error loading work log:", error);
+      } finally {
+        setLoadingWorkLog(false);
+      }
+    };
+
+    if (activeTab === "Work log") {
+      fetchWorkLog();
     }
   }, [task.id, activeTab]);
 
@@ -115,7 +134,7 @@ const EditTaskModal = ({ task, onClose, onSave, githubRepo }) => {
     editedDescription.trim() !== (task.description || "").trim();
   const filteredHistory =
     filter === "all" ? history : history.filter(entry => entry.action === filter);
-  const TABS = ["Comments", "History", "Work log"];
+  const TABS = ["Comments", "Git history", "Work log"];
 
   return (
     <div className="modal-overlay-task">
@@ -189,6 +208,22 @@ const EditTaskModal = ({ task, onClose, onSave, githubRepo }) => {
                       <p>Loading comments...</p>
                     ) : (
                       <>
+                        <div className="comment-input-section">
+                          <CommentEditor
+                            onSubmit={async html => {
+                              if (!html.trim()) return;
+                              try {
+                                const res = await axiosInstance.post(
+                                  `/api/tasks/${task.id}/comments/`,
+                                  { text: html },
+                                );
+                                setComments(prev => [...prev, res.data]);
+                              } catch (error) {
+                                console.error("Error adding comment:", error);
+                              }
+                            }}
+                          />
+                        </div>
                         <div className="comments-scroll">
                           <div className="comments-list">
                             {comments.length === 0 && <p>There are no comments yet.</p>}
@@ -219,28 +254,12 @@ const EditTaskModal = ({ task, onClose, onSave, githubRepo }) => {
                             ))}
                           </div>
                         </div>
-                        <div className="comment-input-section">
-                          <CommentEditor
-                            onSubmit={async html => {
-                              if (!html.trim()) return;
-                              try {
-                                const res = await axiosInstance.post(
-                                  `/api/tasks/${task.id}/comments/`,
-                                  { text: html },
-                                );
-                                setComments(prev => [...prev, res.data]);
-                              } catch (error) {
-                                console.error("Error adding comment:", error);
-                              }
-                            }}
-                          />
-                        </div>
                       </>
                     )}
                   </>
                 )}
 
-                {activeTab === "History" && (
+                {activeTab === "Git history" && (
                   <>
                     {loadingHistory ? (
                       <p>Loading history...</p>
@@ -312,7 +331,49 @@ const EditTaskModal = ({ task, onClose, onSave, githubRepo }) => {
                   </>
                 )}
 
-                {activeTab === "Work log" && <p>The change work logs will be here.</p>}
+                {activeTab === "Work log" && (
+                  <>
+                    {loadingWorkLog ? (
+                      <p>Loading work log...</p>
+                    ) : workLog.length === 0 ? (
+                      <p>No activity logged yet.</p>
+                    ) : (
+                      <ul className="task-history-list">
+                        {workLog.map(entry => (
+                          <li key={entry.id} className="task-history-item">
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                              <div
+                                style={{
+                                  fontSize: "16px",
+                                  color: "#283c60",
+                                }}
+                                dangerouslySetInnerHTML={{
+                                  __html: DOMPurify.sanitize(entry.action),
+                                }}
+                              ></div>
+                              <small>
+                                {new Date(entry.created_at).toLocaleString("en-EN", {
+                                  day: "2-digit",
+                                  month: "long",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: false,
+                                })}
+                              </small>
+                            </div>
+                            <div
+                              className="history-details"
+                              dangerouslySetInnerHTML={{
+                                __html: DOMPurify.sanitize(entry.details),
+                              }}
+                            />
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
+                )}
               </div>
 
               <div className="modal-task-buttons">

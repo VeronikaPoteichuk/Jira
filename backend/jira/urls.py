@@ -23,7 +23,7 @@ from projects.github_auth import (
     github_user_info,
 )
 from boards.utils import github_webhook
-from boards.views import TaskHistoryAPIView
+from boards.views import TaskHistoryAPIView, TaskWorkLogAPIView
 
 
 @ensure_csrf_cookie
@@ -66,6 +66,9 @@ urlpatterns = [
     path("webhooks/github/", github_webhook, name="github-webhook"),
     path(
         "api/tasks/<int:pk>/history/", TaskHistoryAPIView.as_view(), name="task-history"
+    ),
+    path(
+        "api/tasks/<int:pk>/worklog/", TaskWorkLogAPIView.as_view(), name="task-worklog"
     ),
 ]
 
