@@ -222,12 +222,19 @@ class TaskViewSet(ModelViewSet):
         if not repo:
             return Response({"detail": "Repository not specified."}, status=400)
 
+        project = task.column.board.project
+        token = project.get_github_token()
+        if not token:
+            return Response(
+                {"detail": "GitHub token not configured for this project."}, status=400
+            )
+
         title_slug = task.title.lower().replace(" ", "-")
         branch_suffix = f"TV-{task.id_in_board}-{title_slug}"
         branch_name = f"feature/{branch_suffix}"
 
         try:
-            branch_info = create_github_branch(repo, branch_suffix)
+            branch_info = create_github_branch(repo, branch_suffix, token)
             task.branch_name = branch_name
             task.save()
 

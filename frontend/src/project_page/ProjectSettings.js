@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import axiosInstance from "../api/axios";
 import "./style.css";
@@ -7,6 +7,11 @@ const extractUserRepo = url => {
   const match = url.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)(\.git)?$/i);
   if (!match) return null;
   return `${match[1]}/${match[2].replace(/\.git$/, "")}`;
+};
+
+const isValidGitHubToken = token => {
+  const tokenPattern = /^gh[opusr]_[A-Za-z0-9]{36}$/;
+  return tokenPattern.test(token);
 };
 
 const ProjectSettings = ({ projectId }) => {
@@ -24,6 +29,11 @@ const ProjectSettings = ({ projectId }) => {
   const [addMemberError, setAddMemberError] = useState("");
   const [addMemberSuccess, setAddMemberSuccess] = useState("");
   const [isAddingMember, setIsAddingMember] = useState(false);
+
+  const [githubToken, setGithubToken] = useState("");
+  const [initialGithubToken, setInitialGithubToken] = useState("");
+  const [tokenError, setTokenError] = useState("");
+  const tokenInputRef = useRef(null);
 
   const handleAddMember = async e => {
     e.preventDefault();
@@ -68,6 +78,7 @@ const ProjectSettings = ({ projectId }) => {
         setRepoUrl(savedRepo ? `https://github.com/${savedRepo}` : "");
         setInitialRepoUrl(res.data.github_repo || "");
         setMembers(res.data.members || []);
+        setInitialGithubToken(res.data.has_token ? "***************" : "");
       } catch (err) {
         console.error("Project loading error:", err);
       } finally {
@@ -132,6 +143,7 @@ const ProjectSettings = ({ projectId }) => {
       const userRepo = extractUserRepo(repoUrl);
       await axiosInstance.patch(`/api/projects/${projectId}/`, {
         github_repo: userRepo,
+        token: githubToken,
       });
       alert("The repository was saved successfully!");
       setInitialRepoUrl(userRepo);
@@ -139,6 +151,30 @@ const ProjectSettings = ({ projectId }) => {
       alert("Error saving repository.");
       console.error(err);
     }
+  };
+
+  const handleSaveToken = async () => {
+    if (!isValidGitHubToken(githubToken)) {
+      setTokenError("Invalid token format. It should look like: ghp_ followed by 36 characters.");
+      return;
+    }
+    setTokenError("");
+    try {
+      await axiosInstance.patch(`/api/projects/${projectId}/`, {
+        token: githubToken,
+      });
+      setInitialGithubToken(githubToken);
+      setGithubToken("");
+      toast.success("Token saved successfully!");
+    } catch (err) {
+      console.error("Error saving token:", err);
+      toast.error("Failed to save token.");
+    }
+  };
+
+  const handleEditClick = () => {
+    setInitialGithubToken("");
+    setGithubToken("");
   };
 
   if (loading) return <div>Loading settings...</div>;
@@ -195,6 +231,40 @@ const ProjectSettings = ({ projectId }) => {
               >
                 {isValidating ? "Access check..." : "Save"}
               </button>
+            </td>
+          </tr>
+
+          <tr>
+            <td>GitHub Token</td>
+            <td colSpan={2}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                {githubToken === "" && initialGithubToken ? (
+                  <>
+                    <input
+                      type="password"
+                      value="***************"
+                      disabled
+                      style={{ marginRight: "0.5rem" }}
+                    />
+                    <button onClick={handleEditClick}>Edit</button>{" "}
+                  </>
+                ) : (
+                  <>
+                    <input
+                      ref={tokenInputRef}
+                      type="text"
+                      value={githubToken}
+                      onChange={e => setGithubToken(e.target.value)}
+                      placeholder="ghp_..."
+                      style={{ marginRight: "0.5rem" }}
+                    />
+                    <button onClick={handleSaveToken} disabled={!githubToken.trim()}>
+                      Save
+                    </button>
+                  </>
+                )}
+              </div>
+              {tokenError && <div className="error-message">{tokenError}</div>}
             </td>
           </tr>
 

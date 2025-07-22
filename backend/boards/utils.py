@@ -1,6 +1,5 @@
 import json
 import requests
-from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Task, TaskHistory
@@ -9,9 +8,9 @@ from .models import Task, TaskHistory
 GITHUB_API = "https://api.github.com"
 
 
-def create_github_branch(repo, branch_name, base_branch="main"):
+def create_github_branch(repo, branch_name, token, base_branch="main"):
     headers = {
-        "Authorization": f"token {settings.GITHUB_TOKEN}",
+        "Authorization": f"token {token}",
         "Accept": "application/vnd.github+json",
     }
 

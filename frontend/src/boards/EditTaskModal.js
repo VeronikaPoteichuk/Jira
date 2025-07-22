@@ -17,11 +17,13 @@ const EditTaskModal = ({ task, onClose, onSave, githubRepo }) => {
   const [filter, setFilter] = useState("all");
   const [workLog, setWorkLog] = useState([]);
   const [loadingWorkLog, setLoadingWorkLog] = useState(true);
+  const [branchCreated, setBranchCreated] = useState(false);
 
   useEffect(() => {
     setTitle(task.title || "");
     setDescription(task.description || "");
     setEditedDescription(task.description || "");
+    setBranchCreated(!!(task.github_branch_url || task.branch_name));
   }, [task]);
 
   useEffect(() => {
@@ -411,7 +413,13 @@ const EditTaskModal = ({ task, onClose, onSave, githubRepo }) => {
                 <li>
                   <strong>Development:</strong>
                   <button
+                    disabled={branchCreated}
+                    title={
+                      branchCreated ? "GitHub branch was already created" : "Create GitHub Branch"
+                    }
                     onClick={async () => {
+                      if (branchCreated) return;
+
                       if (!githubRepo) {
                         alert("Repository not set for project.");
                         return;
@@ -425,14 +433,22 @@ const EditTaskModal = ({ task, onClose, onSave, githubRepo }) => {
                           },
                         );
                         alert(`Branch created:\n${res.data.branch_url}`);
+                        setBranchCreated(true);
+                        if (onSave) {
+                          onSave({
+                            ...task,
+                            github_branch_url: res.data.branch_url,
+                            branch_name: res.data.branch,
+                          });
+                        }
                       } catch (err) {
                         alert("Error creating branch.");
                         console.error(err);
                       }
                     }}
                   >
-                    <GitBranchPlus style={{ strokeWidth: "1.5", width: "20" }} /> Create GitHub
-                    Branch
+                    <GitBranchPlus style={{ strokeWidth: "1.5", width: "20" }} />{" "}
+                    {branchCreated ? "GitHub branch" : "Create GitHub Branch"}
                   </button>
                 </li>
               </ul>

@@ -62,7 +62,7 @@ class ValidateGitHubRepoAccessView(APIView):
             try:
                 project_id = request.query_params.get("project_id")
                 project = Project.objects.get(id=project_id, created_by=request.user)
-                access_token = project.github_token
+                access_token = project.get_github_token()
             except Project.DoesNotExist:
                 return Response(
                     {"valid": False, "error": "Token not found"}, status=403
