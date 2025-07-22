@@ -84,7 +84,7 @@ const Projects = () => {
 
                     <div className="project-actions" ref={el => registerRef(project.id, el)}>
                       <button
-                        className="menu-button"
+                        className="menu-button-more"
                         onClick={e => {
                           e.preventDefault();
                           toggleMenu(project.id);

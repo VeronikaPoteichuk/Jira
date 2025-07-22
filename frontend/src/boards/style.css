@@ -27,7 +27,7 @@
   overflow-y: auto;
   max-height: 500px;
   overflow-y: hidden;
-  scrollbar-color: gray #ebecf0;
+  scrollbar-color: gray transparent;
 }
 
 .background-columns:hover .tasks-scroll-area {
@@ -509,8 +509,7 @@
 
 .edit-task-modal {
   background: #fff;
-  width: 80%;
-  max-width: 1000px;
+  max-width: 1200px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   display: flex;
@@ -526,9 +525,9 @@
 
 .modal-header {
   border-bottom: 1px solid #e1e4e8;
-  padding: 1rem;
   display: flex;
   justify-content: flex-end;
+  margin-bottom: 3rem;
 }
 
 .modal-title {
@@ -724,12 +723,13 @@
 /* sidebar */
 
 .task-sidebar {
-  width: 260px;
-  background: #f5f5f5;
+  width: 350px;
   padding: 1rem;
   border-radius: 8px;
-  margin-right: 10px;
+  margin-right: 2rem;
   max-height: 300px;
+  border: 1px solid #dfe1e6;
+  box-shadow: 0 1px 2px rgba(0 94 255 / 14%);
 }
 
 .task-sidebar h4 {
@@ -748,12 +748,12 @@
 .task-sidebar li {
   margin-bottom: 0.5rem;
   padding-right: 5px;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .task-sidebar li strong {
   display: inline-block;
-  width: 80px;
+  width: 120px;
   color: #5e6c84;
 }
 
@@ -768,28 +768,66 @@
   text-decoration: underline;
 }
 
-/* { Comments.js } */
-
-.comments-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  max-height: 300px;
-  overflow-y: auto;
-  overflow-y: hidden;
+.task-sidebar button {
+  color: #000000;
+  border: none;
+  background: transparent;
+  padding: 5px;
+  border-radius: 8px;
+  color: royalblue;
 }
 
-.comments-scroll:hover .comments-list {
+.task-sidebar button:hover {
+  text-decoration: underline;
+  cursor: pointer;
+  color: #0052cc;
+  background-color: #f4f5f7;
+}
+
+/* { comments } */
+
+.comments-list {
+  gap: 0.2rem;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.comments-scroll {
   overflow-y: auto;
+  position: relative;
+  margin-top: 1rem;
+  max-height: 250px;
+}
+
+.comments-scroll::-webkit-scrollbar,
+.task-history-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.comments-scroll::-webkit-scrollbar-thumb,
+.task-history-list::-webkit-scrollbar-thumb {
+  background-color: gray;
+  border-radius: 4px;
+  border-style: inset;
+}
+
+.comments-scroll::-webkit-scrollbar-track,
+.task-history-list::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .comment-item {
-  background: #f4f5f7;
+  border: 1px solid #dfe1e6;
   padding: 0.5rem 0.75rem;
   border-radius: 8px;
   font-size: 14px;
   color: #172b4d;
+  margin-right: 1px;
+}
+
+.comment-text p {
+  margin: 0;
+  padding: 5px 0;
 }
 
 .comment-input-section {
@@ -805,8 +843,64 @@
 
 .modal-main-content {
   flex: 1;
+  width: 800px;
 }
 
+/* { history } */
+
+.task-history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  height: 400px;
+  overflow-y: auto;
+  /* scrollbar-color: gray transparent; */
+}
+
+.task-history-item {
+  padding: 0.5rem;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+}
+
+.task-history-item:hover {
+  background-color: #f4f5f7;
+}
+
+.history-details {
+  margin: 0.5em 0;
+  color: #212328e3;
+}
+
+.history-filter {
+  border: 1px solid gray;
+  padding: 2px;
+  background: transparent;
+  border-radius: 8px;
+}
+
+.history-filter:active {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.history-details em {
+  border: 1px solid gray;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-style: normal;
+}
+
+.task-history-item u {
+  text-decoration: none;
+  font-weight: 550;
+}
+
+.history-details u {
+  font-weight: normal;
+}
 /* { CommentEditor.js} */
 
 .toolbar-comments {
@@ -834,12 +928,12 @@
   padding: 6px;
   cursor: pointer;
   transition:
-    background 0.2s,
+    background-color 0.2s,
     border-color 0.2s;
 }
 
 .button-click:hover {
-  background: #ebecf0;
+  background-color: #ebecf0;
   border-color: #dfe1e6;
 }
 
@@ -880,7 +974,7 @@
   font-weight: 500;
   font-size: 14px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color 0.2s;
 }
 
 .save-comment-button button:hover {
@@ -889,7 +983,6 @@
 
 .ProseMirror {
   min-height: 70px;
-  max-width: 530px;
 }
 
 .comments-editor p,

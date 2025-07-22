@@ -12,6 +12,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
+    "@ngrok/ngrok": "^0.3.0",
     "@react-oauth/google": "^0.12.2",
     "@shadcn/ui": "^0.0.4",
     "@tailwindcss/postcss": "^4.1.6",

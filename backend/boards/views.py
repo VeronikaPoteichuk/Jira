@@ -1,17 +1,21 @@
 from adrf.viewsets import ModelViewSet
-from .models import Board, Column, Task, Comment
+from .models import Board, Column, Task, Comment, TaskHistory
 from .serializers import (
     BoardSerializer,
     ColumnSerializer,
     TaskWriteSerializer,
     TaskReadSerializer,
     CommentSerializer,
+    TaskHistorySerializer,
 )
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
+from .utils import create_github_branch
+import requests
+from django.db import models
 
 
 class BoardViewSet(ModelViewSet):
@@ -20,7 +24,10 @@ class BoardViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         return (
-            Board.objects.filter(project__created_by=user)
+            Board.objects.filter(
+                models.Q(project__created_by=user) | models.Q(project__members=user)
+            )
+            .distinct()
             .select_related("project", "created_by")
             .prefetch_related(
                 "columns",
@@ -87,7 +94,28 @@ class TaskViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        task = serializer.save(author=self.request.user)
+
+        task = serializer.save(author=request.user)
+
+        if not task.id_in_board:
+            board = task.column.board
+            last_id = (
+                Task.objects.filter(column__board=board).aggregate(
+                    max_id=Max("id_in_board")
+                )["max_id"]
+                or 0
+            )
+            task.id_in_board = last_id + 1
+            task.save()
+
+        TaskHistory.objects.create(
+            task=task,
+            action="Created",
+            details=f"<strong>{request.user.username}</strong> created the task in "
+            f"<em>{task.column.name}</em> column.",
+            source="system",
+        )
+
         read_serializer = TaskReadSerializer(
             task, context=self.get_serializer_context()
         )
@@ -107,33 +135,77 @@ class TaskViewSet(ModelViewSet):
         return Response(read_serializer.data, status=status.HTTP_200_OK)
 
     def partial_update(self, request, *args, **kwargs):
-        kwargs["partial"] = True
-        return self.update(request, *args, **kwargs)
+        instance = self.get_object()
+        old_title = instance.title
+        old_description = instance.description
+
+        if old_description == "":
+            old_description = "None"
+
+        response = super().partial_update(request, *args, **kwargs)
+        updated = self.get_object()
+
+        if updated.title != old_title:
+            TaskHistory.objects.create(
+                task=updated,
+                action=f"<strong>{request.user.username}</strong> changed <u>Title</u>",
+                details=f"<u>{old_title}</u> &rArr; <u>{updated.title}</u>.",
+                source="system",
+            )
+        if updated.description != old_description:
+            if updated.description == "":
+                updated.description = "None"
+            TaskHistory.objects.create(
+                task=updated,
+                action=f"<strong>{request.user.username}</strong> changed <u>Description</u>",
+                details=f"<u>{old_description}</u> &rArr; <u>{updated.description}</u>",
+                source="system",
+            )
+
+        return response
 
     @action(detail=False, methods=["post"])
     def reorder(self, request):
         task_data = request.data.get("tasks", [])
-        task_ids = [item["id"] for item in task_data]
-
-        tasks = list(Task.objects.filter(id__in=task_ids))
-        task_map = {task.id: task for task in tasks}
-
         updated_tasks = []
+        move_events = []
+
         for item in task_data:
-            task = task_map.get(item["id"])
+            id_in_board = item["id"]
+            column_id = item["column"]
+            order = item["order"]
+
+            try:
+                column = Column.objects.select_related("board").get(id=column_id)
+            except Column.DoesNotExist:
+                continue
+
+            board = column.board
+
+            task = Task.objects.filter(
+                column__board=board, id_in_board=id_in_board
+            ).first()
+
             if task:
-                task.order = item["order"]
-                task.column_id = item["column"]
+                old_column = task.column
+                task.order = order
+                task.column = column
                 updated_tasks.append(task)
+                if old_column != column:
+                    move_events.append((task, old_column, column))
 
         if updated_tasks:
             Task.objects.bulk_update(updated_tasks, ["order", "column"])
 
-        updated_ids = [task.id for task in updated_tasks]
-        refreshed_tasks = Task.objects.filter(id__in=updated_ids).select_related(
-            "column__board__project", "author", "column"
-        )
-        serializer = TaskReadSerializer(refreshed_tasks, many=True)
+        for task, old_column, new_column in move_events:
+            TaskHistory.objects.create(
+                task=task,
+                action=f"<strong>{request.user.username}</strong> moved <u>Status</u>",
+                details=f"<em>{old_column.name}</em> &rArr; <em>{new_column.name}</em>",
+                source="system",
+            )
+
+        serializer = TaskReadSerializer(updated_tasks, many=True)
 
         return Response(
             {
@@ -142,6 +214,40 @@ class TaskViewSet(ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
+    @action(detail=True, methods=["post"])
+    def create_github_branch(self, request, pk=None):
+        task = self.get_object()
+        repo = request.data.get("repo")
+        if not repo:
+            return Response({"detail": "Repository not specified."}, status=400)
+
+        project = task.column.board.project
+        token = project.get_github_token()
+        if not token:
+            return Response(
+                {"detail": "GitHub token not configured for this project."}, status=400
+            )
+
+        title_slug = task.title.lower().replace(" ", "-")
+        branch_suffix = f"TV-{task.id_in_board}-{title_slug}"
+        branch_name = f"feature/{branch_suffix}"
+
+        try:
+            branch_info = create_github_branch(repo, branch_suffix, token)
+            task.branch_name = branch_name
+            task.save()
+
+            return Response(
+                {
+                    "branch": branch_name,
+                    "branch_url": branch_info["url"],
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        except requests.HTTPError as e:
+            print("GitHub brunch creation failed:", e.response.text)
+            return Response({"error": str(e)}, status=400)
 
 
 class CommentViewSet(ModelViewSet):
@@ -161,4 +267,20 @@ class ProjectBoardsAPIView(APIView):
     def get(self, request, project_id):
         boards = Board.objects.filter(project_id=project_id)
         serializer = BoardSerializer(boards, many=True)
+        return Response(serializer.data)
+
+
+class TaskHistoryAPIView(APIView):
+    def get(self, request, pk):
+        task = Task.objects.get(pk=pk)
+        history = task.history.filter(source="github").order_by("-created_at")
+        serializer = TaskHistorySerializer(history, many=True)
+        return Response(serializer.data)
+
+
+class TaskWorkLogAPIView(APIView):
+    def get(self, request, pk):
+        task = Task.objects.get(pk=pk)
+        worklog = task.history.filter(source="system").order_by("-created_at")
+        serializer = TaskHistorySerializer(worklog, many=True)
         return Response(serializer.data)

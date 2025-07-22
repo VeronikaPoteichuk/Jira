@@ -1,5 +1,7 @@
 from django.db import models
+from django.db.models import Max
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 
 class Board(models.Model):
@@ -27,7 +29,10 @@ class Column(models.Model):
 
 
 class Task(models.Model):
-    column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="tasks")
+    id_in_board = models.PositiveIntegerField()
+    column = models.ForeignKey(
+        Column, on_delete=models.CASCADE, related_name="tasks", db_index=True
+    )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     author = models.ForeignKey(
@@ -36,16 +41,42 @@ class Task(models.Model):
         null=True,
         blank=True,
         on_delete=models.CASCADE,
+        db_index=True,
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     order = models.PositiveIntegerField(default=0)
+    branch_name = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         ordering = ["order"]
 
     def __str__(self):
-        return f"Task #{self.id}: {self.title} by {self.author} in {self.column.name}"
+        return f"Task #{self.id_in_board}: {self.title} in {self.column.name}"
+
+    def save(self, *args, **kwargs):
+        if not self.id_in_board:
+            if self.column is not None:
+                board = self.column.board
+                last_id = (
+                    Task.objects.filter(column__board=board).aggregate(
+                        max_id=Max("id_in_board")
+                    )["max_id"]
+                    or 0
+                )
+                self.id_in_board = last_id + 1
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def clean(self):
+        if not self.column:
+            return
+        board = self.column.board
+        existing = Task.objects.filter(
+            column__board=board, id_in_board=self.id_in_board
+        ).exclude(pk=self.pk)
+        if existing.exists():
+            raise ValidationError("id_in_board must be unique within the board.")
 
 
 class Comment(models.Model):
@@ -59,3 +90,14 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"Comment by {self.author} on {self.task}"
+
+
+class TaskHistory(models.Model):
+    task = models.ForeignKey("Task", related_name="history", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    action = models.CharField(max_length=255)
+    details = models.TextField(blank=True)
+    source = models.CharField(max_length=100, default="system")
+
+    class Meta:
+        ordering = ["created_at"]

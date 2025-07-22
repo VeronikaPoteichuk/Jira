@@ -32,6 +32,7 @@ const Board = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { boardId } = useParams();
   const cleanBoardId = boardId.replace(/^board-/, "");
+  const [board, setBoard] = useState(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -46,6 +47,7 @@ const Board = () => {
     if (!boardId) return;
     axiosInstance.get(`/api/boards/${cleanBoardId}/`).then(res => {
       setColumns(res.data.columns);
+      setBoard(res.data);
     });
   }, [boardId]);
 
@@ -58,7 +60,7 @@ const Board = () => {
       setActiveColumn(column);
     } else {
       const sourceColumn = columns.find(col => col.id === parseInt(columnId));
-      const task = sourceColumn.tasks.find(t => t.id === parseInt(taskId));
+      const task = sourceColumn.tasks.find(t => t.id_in_board === parseInt(taskId));
       setActiveTask(task);
     }
   };
@@ -94,7 +96,7 @@ const Board = () => {
     const targetCol = newColumns.find(col => col.id === parseInt(over.columnId));
     if (!sourceCol || !targetCol) return;
 
-    const fromIndex = sourceCol.tasks.findIndex(t => t.id === parseInt(active.taskId));
+    const fromIndex = sourceCol.tasks.findIndex(t => t.id_in_board === parseInt(active.taskId));
     if (fromIndex === -1) return;
 
     const [movedTask] = sourceCol.tasks.splice(fromIndex, 1);
@@ -103,7 +105,7 @@ const Board = () => {
     if (over.taskId === "placeholder") {
       targetCol.tasks.push(movedTask);
     } else {
-      const toIndex = targetCol.tasks.findIndex(t => t.id === parseInt(over.taskId));
+      const toIndex = targetCol.tasks.findIndex(t => t.id_in_board === parseInt(over.taskId));
       const insertIndex = toIndex === -1 ? targetCol.tasks.length : toIndex;
       targetCol.tasks.splice(insertIndex, 0, movedTask);
     }
@@ -114,7 +116,7 @@ const Board = () => {
     await axiosInstance.post("/api/tasks/reorder/", {
       tasks: newColumns.flatMap(col =>
         col.tasks.map((task, index) => ({
-          id: task.id,
+          id: task.id_in_board,
           order: index,
           column: col.id,
         })),
@@ -208,11 +210,11 @@ const Board = () => {
   const handleUpdateTask = updatedTask => {
     setColumns(prevColumns =>
       prevColumns.map(column => {
-        if (column.tasks.some(task => task.id === updatedTask.id)) {
+        if (column.tasks.some(task => task.id_in_board === updatedTask.id_in_board)) {
           return {
             ...column,
             tasks: column.tasks.map(task =>
-              task.id === updatedTask.id ? { ...task, ...updatedTask } : task,
+              task.id_in_board === updatedTask.id_in_board ? { ...task, ...updatedTask } : task,
             ),
           };
         }
@@ -221,9 +223,9 @@ const Board = () => {
     );
   };
 
-  const getTaskById = id => {
+  const getTaskById = id_in_board => {
     for (const col of columns) {
-      const task = col.tasks.find(t => t.id === id);
+      const task = col.tasks.find(t => t.id_in_board === id_in_board);
       if (task) return task;
     }
     return null;
@@ -309,13 +311,13 @@ const Board = () => {
                   />
 
                   <SortableContext
-                    items={column.tasks.map(task => `task:${column.id}:${task.id}`)}
+                    items={column.tasks.map(task => `task:${column.id}:${task.id_in_board}`)}
                     strategy={verticalListSortingStrategy}
                   >
                     <div className="tasks-scroll-area">
                       {filterTasks(column.tasks).map(task => (
                         <TaskCard
-                          key={task.id}
+                          key={task.id_in_board}
                           task={{ ...task, column: column.id }}
                           onDelete={taskId => handleDeleteTask(taskId, column.id)}
                           onClick={taskId => {
@@ -346,7 +348,7 @@ const Board = () => {
           ) : activeTask ? (
             <TaskCard
               task={activeTask}
-              onDelete={() => handleDeleteTask(activeTask.id, activeTask.column)}
+              onDelete={() => handleDeleteTask(activeTask.id_in_board, activeTask.column)}
             />
           ) : null}
         </DragOverlay>
@@ -358,6 +360,7 @@ const Board = () => {
           onClose={() => setEditingTask(null)}
           onSave={handleUpdateTask}
           onDelete={taskId => handleDeleteTask(taskId, editingTask.column)}
+          githubRepo={board.github_repo}
         />
       )}
     </>
