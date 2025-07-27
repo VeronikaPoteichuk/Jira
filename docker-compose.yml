@@ -27,6 +27,7 @@ services:
       - ./backend:/app
     ports:
       - "8000:8000"
+      - "5678:5678"
     depends_on:
       db:
         condition: service_healthy
@@ -40,7 +41,7 @@ services:
       DJANGO_DEBUG: "True"
       FERNET_KEY: "tlnTsY1PfNXItz7tbuQBQNOQXiqY8yDOzf7xV94Kqeo="
     command: >
-      sh -c "python manage.py migrate && uvicorn jira.asgi:application --host 0.0.0.0 --port 8000 --reload"
+      sh -c "python manage.py migrate && python -m debugpy --listen 0.0.0.0:5678 -m uvicorn jira.asgi:application --host 0.0.0.0 --port 8000 --reload"
 
   tests:
     build:

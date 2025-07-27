@@ -1,4 +1,4 @@
-FROM python:3.13-slim as base
+FROM python:3.13-slim AS base
 
 RUN apt-get update && \
     pip install --no-cache-dir uv==0.6.4 && \
@@ -17,11 +17,12 @@ WORKDIR /app
 
 COPY requirements.lock ./
 
-RUN uv pip install --no-cache-dir -r requirements.lock
+RUN uv pip install --no-cache-dir -r requirements.lock && \
+    pip install --no-cache-dir debugpy==1.8.15
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+CMD ["sh", "-c", "python manage.py migrate && python -m debugpy --listen 0.0.0.0:5678 manage.py runserver 0.0.0.0:8000"]
 
 FROM base AS tests
 

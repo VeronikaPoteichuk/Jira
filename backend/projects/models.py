@@ -3,8 +3,6 @@ from django.conf import settings
 import hashlib
 from cryptography.fernet import Fernet, InvalidToken
 
-from django.conf import settings
-
 FERNET_KEY = settings.FERNET_KEY
 if not FERNET_KEY:
     raise RuntimeError(
