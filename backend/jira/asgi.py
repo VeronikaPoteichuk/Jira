@@ -1,17 +1,13 @@
 import os
-
 from django.core.asgi import get_asgi_application
-from jira.websocket import websocket_application
+from channels.routing import ProtocolTypeRouter, URLRouter
+from boards.routing import websocket_urlpatterns
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "jira.settings")
 
-django_application = get_asgi_application()
-
-
-async def application(scope, receive, send):
-    if scope["type"] == "http":
-        await django_application(scope, receive, send)
-    elif scope["type"] == "websocket":
-        await websocket_application(scope, receive, send)
-    else:
-        raise NotImplementedError(f"Unknown scope type {scope['type']}")
+application = ProtocolTypeRouter(
+    {
+        "http": get_asgi_application(),
+        "websocket": URLRouter(websocket_urlpatterns),
+    }
+)

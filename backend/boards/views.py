@@ -16,6 +16,8 @@ from rest_framework.permissions import IsAuthenticated
 from .utils import create_github_branch
 import requests
 from django.db import models
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 
 class BoardViewSet(ModelViewSet):
@@ -108,12 +110,26 @@ class TaskViewSet(ModelViewSet):
             task.id_in_board = last_id + 1
             task.save()
 
-        TaskHistory.objects.create(
+        history = TaskHistory.objects.create(
             task=task,
             action="Created",
             details=f"<strong>{request.user.username}</strong> created the task in "
             f"<em>{task.column.name}</em> column.",
             source="system",
+        )
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"task_{task.id}",
+            {
+                "type": "send_history_update",
+                "data": {
+                    "action": "Created",
+                    "details": f"<strong>{request.user.username}</strong> created the task in <em>{task.column.name}</em> column.",
+                    "created_at": str(history.created_at),
+                    "id": task.id,
+                    "source": "system",
+                },
+            },
         )
 
         read_serializer = TaskReadSerializer(
@@ -145,21 +161,51 @@ class TaskViewSet(ModelViewSet):
         response = super().partial_update(request, *args, **kwargs)
         updated = self.get_object()
 
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+
+        channel_layer = get_channel_layer()
         if updated.title != old_title:
-            TaskHistory.objects.create(
+            history = TaskHistory.objects.create(
                 task=updated,
                 action=f"<strong>{request.user.username}</strong> changed <u>Title</u>",
                 details=f"<u>{old_title}</u> &rArr; <u>{updated.title}</u>.",
                 source="system",
             )
+            async_to_sync(channel_layer.group_send)(
+                f"task_{updated.id}",
+                {
+                    "type": "send_history_update",
+                    "data": {
+                        "action": f"<strong>{request.user.username}</strong> changed <u>Title</u>",
+                        "details": f"<u>{old_title}</u> &rArr; <u>{updated.title}</u>.",
+                        "created_at": str(history.created_at),
+                        "id": updated.id,
+                        "source": "system",
+                    },
+                },
+            )
         if updated.description != old_description:
             if updated.description == "":
                 updated.description = "None"
-            TaskHistory.objects.create(
+            history = TaskHistory.objects.create(
                 task=updated,
                 action=f"<strong>{request.user.username}</strong> changed <u>Description</u>",
                 details=f"<u>{old_description}</u> &rArr; <u>{updated.description}</u>",
                 source="system",
+            )
+            async_to_sync(channel_layer.group_send)(
+                f"task_{updated.id}",
+                {
+                    "type": "send_history_update",
+                    "data": {
+                        "action": f"<strong>{request.user.username}</strong> changed <u>Description</u>",
+                        "details": f"<u>{old_description}</u> &rArr; <u>{updated.description}</u>",
+                        "created_at": str(history.created_at),
+                        "id": updated.id,
+                        "source": "system",
+                    },
+                },
             )
 
         return response
@@ -197,12 +243,29 @@ class TaskViewSet(ModelViewSet):
         if updated_tasks:
             Task.objects.bulk_update(updated_tasks, ["order", "column"])
 
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+
         for task, old_column, new_column in move_events:
-            TaskHistory.objects.create(
+            history = TaskHistory.objects.create(
                 task=task,
                 action=f"<strong>{request.user.username}</strong> moved <u>Status</u>",
                 details=f"<em>{old_column.name}</em> &rArr; <em>{new_column.name}</em>",
                 source="system",
+            )
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f"task_{task.id}",
+                {
+                    "type": "send_history_update",
+                    "data": {
+                        "action": f"<strong>{request.user.username}</strong> moved <u>Status</u>",
+                        "details": f"<em>{old_column.name}</em> &rArr; <em>{new_column.name}</em>",
+                        "created_at": str(history.created_at),
+                        "id": task.id,
+                        "source": "system",
+                    },
+                },
             )
 
         serializer = TaskReadSerializer(updated_tasks, many=True)

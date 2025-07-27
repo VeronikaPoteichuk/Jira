@@ -2,12 +2,14 @@ from django.db import models
 from django.conf import settings
 import hashlib
 from cryptography.fernet import Fernet, InvalidToken
-import base64
-import os
 
-FERNET_KEY = os.environ.get("FERNET_KEY")
+from django.conf import settings
+
+FERNET_KEY = settings.FERNET_KEY
 if not FERNET_KEY:
-    FERNET_KEY = base64.urlsafe_b64encode(os.urandom(32)).decode()
+    raise RuntimeError(
+        "FERNET_KEY is not set in Django settings. Please set it in your .env and load it in settings.py!"
+    )
 fernet = Fernet(FERNET_KEY.encode())
 
 

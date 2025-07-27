@@ -77,6 +77,31 @@ const EditTaskModal = ({ task, onClose, onSave, githubRepo }) => {
     }
   }, [task.id, activeTab]);
 
+  useEffect(() => {
+    let wsHistory = null;
+    let wsWorklog = null;
+    if (activeTab === "Git history") {
+      wsHistory = new WebSocket(`ws://localhost:8000/ws/tasks/${task.id}/history/`);
+      wsHistory.onmessage = event => {
+        const data = JSON.parse(event.data);
+        setHistory(prev => [data, ...prev]);
+      };
+    }
+    if (activeTab === "Work log") {
+      wsWorklog = new WebSocket(`ws://localhost:8000/ws/tasks/${task.id}/history/`);
+      wsWorklog.onmessage = event => {
+        const data = JSON.parse(event.data);
+        if (data.source === "system") {
+          setWorkLog(prev => [data, ...prev]);
+        }
+      };
+    }
+    return () => {
+      if (wsHistory) wsHistory.close();
+      if (wsWorklog) wsWorklog.close();
+    };
+  }, [task.id, activeTab]);
+
   const handleSaveDescription = async () => {
     try {
       const res = await axiosInstance.patch(`/api/tasks/${task.id}/`, {
