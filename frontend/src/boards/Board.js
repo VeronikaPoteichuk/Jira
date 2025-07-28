@@ -155,24 +155,37 @@ const Board = () => {
   };
 
   const handleAddColumn = async () => {
+    if (columns.some(col => col.isNew)) return;
+    setColumns(prev => [
+      ...prev,
+      {
+        id: `new-${Date.now()}`,
+        name: "",
+        tasks: [],
+        isNew: true,
+        order: columns.length,
+      },
+    ]);
+  };
+
+  const handleCreateColumn = async (name, tempId) => {
     try {
       const res = await axiosInstance.post("/api/columns/", {
-        name: "New column",
+        name,
         board: cleanBoardId,
-        order: columns.length,
+        order: columns.length - 1,
       });
-
-      setColumns(prev => [
-        ...prev,
-        {
-          ...res.data,
-          tasks: [],
-          isNew: true,
-        },
-      ]);
+      setColumns(prev =>
+        prev.map(col => (col.id === tempId ? { ...res.data, tasks: [], isNew: false } : col)),
+      );
     } catch (error) {
-      console.error("Error adding column:", error.response?.data || error.message);
+      setColumns(prev => prev.filter(col => col.id !== tempId));
+      console.error("Error creating column:", error.response?.data || error.message);
     }
+  };
+
+  const handleCancelCreateColumn = tempId => {
+    setColumns(prev => prev.filter(col => col.id !== tempId));
   };
 
   const handleDeleteColumn = async columnId => {
@@ -304,40 +317,76 @@ const Board = () => {
                     maxHeight: "100%",
                   }}
                 >
-                  <Column
-                    column={column}
-                    onUpdateName={handleUpdateColumnName}
-                    onDelete={handleDeleteColumn}
-                  />
-
-                  <SortableContext
-                    items={column.tasks.map(task => `task:${column.id}:${task.id_in_board}`)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    <div className="tasks-scroll-area">
-                      {filterTasks(column.tasks).map(task => (
-                        <TaskCard
-                          key={task.id_in_board}
-                          task={{ ...task, column: column.id }}
-                          onDelete={taskId => handleDeleteTask(taskId, column.id)}
-                          onClick={taskId => {
-                            const freshTask = getTaskById(taskId);
-                            setEditingTask(freshTask);
-                          }}
-                          onUpdate={handleUpdateTask}
-                        />
-                      ))}
+                  {column.isNew ? (
+                    <div className="add-new-column">
+                      <input
+                        autoFocus
+                        type="text"
+                        value={column.name}
+                        placeholder="New column"
+                        className="column-input"
+                        onChange={e => {
+                          const value = e.target.value;
+                          setColumns(prev =>
+                            prev.map(col => (col.id === column.id ? { ...col, name: value } : col)),
+                          );
+                        }}
+                        // style={{ width: "100%", marginBottom: 8, fontWeight: 600, fontSize: 18, border: "1px solid #aaa", borderRadius: 4, padding: 4 }}
+                      />
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button
+                          className="add-column-btn"
+                          style={{ background: "#4caf50", color: "white", flex: 1 }}
+                          disabled={!column.name.trim()}
+                          onClick={() => handleCreateColumn(column.name, column.id)}
+                        >
+                          Create
+                        </button>
+                        <button
+                          className="add-column-btn"
+                          style={{ background: "#f44336", color: "white", flex: 1 }}
+                          onClick={() => handleCancelCreateColumn(column.id)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     </div>
-                  </SortableContext>
-
-                  <div className="add-task-fixed">
-                    <AddTaskToggle columnId={column.id} onAddTask={handleAddTask} />
-                  </div>
+                  ) : (
+                    <>
+                      <Column
+                        column={column}
+                        onUpdateName={handleUpdateColumnName}
+                        onDelete={handleDeleteColumn}
+                      />
+                      <SortableContext
+                        items={column.tasks.map(task => `task:${column.id}:${task.id_in_board}`)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        <div className="tasks-scroll-area">
+                          {filterTasks(column.tasks).map(task => (
+                            <TaskCard
+                              key={task.id_in_board}
+                              task={{ ...task, column: column.id }}
+                              onDelete={taskId => handleDeleteTask(taskId, column.id)}
+                              onClick={taskId => {
+                                const freshTask = getTaskById(taskId);
+                                setEditingTask(freshTask);
+                              }}
+                              onUpdate={handleUpdateTask}
+                            />
+                          ))}
+                        </div>
+                      </SortableContext>
+                      <div className="add-task-fixed">
+                        <AddTaskToggle columnId={column.id} onAddTask={handleAddTask} />
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
           </SortableContext>
-          <button onClick={handleAddColumn} className="add-column-btn">
+          <button onClick={handleAddColumn} className="add-new-column-btn">
             + Add column
           </button>
         </div>

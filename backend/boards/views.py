@@ -89,9 +89,17 @@ class TaskViewSet(ModelViewSet):
         return TaskReadSerializer
 
     def get_queryset(self):
-        return Task.objects.filter(
-            column__board__project__created_by=self.request.user
-        ).select_related("column__board__project", "author", "column")
+        user = self.request.user
+
+        return (
+            Task.objects.filter(
+                models.Q(author=user)
+                | models.Q(column__board__project__created_by=user)
+                | models.Q(column__board__project__members=user)
+            )
+            .distinct()
+            .select_related("column__board__project", "author", "column")
+        )
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -152,17 +160,25 @@ class TaskViewSet(ModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
+        user = request.user
+        project = instance.column.board.project
+
+        is_member = project.members.filter(id=user.id).exists()
+        is_owner = project.created_by_id == user.id
+        is_author = instance.author_id == user.id
+
+        if not (is_member or is_owner or is_author):
+            return Response(
+                {"detail": "You do not have permission to edit this task."}, status=403
+            )
+
         old_title = instance.title
         old_description = instance.description
-
         if old_description == "":
             old_description = "None"
 
         response = super().partial_update(request, *args, **kwargs)
         updated = self.get_object()
-
-        from channels.layers import get_channel_layer
-        from asgiref.sync import async_to_sync
 
         channel_layer = get_channel_layer()
         if updated.title != old_title:
@@ -185,9 +201,11 @@ class TaskViewSet(ModelViewSet):
                     },
                 },
             )
+        if updated.description == "":
+            updated.description = "None"
+
         if updated.description != old_description:
-            if updated.description == "":
-                updated.description = "None"
+
             history = TaskHistory.objects.create(
                 task=updated,
                 action=f"<strong>{request.user.username}</strong> changed <u>Description</u>",

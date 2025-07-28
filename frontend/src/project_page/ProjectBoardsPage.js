@@ -140,7 +140,7 @@ const ProjectBoardsPage = () => {
 
                     <div className="board-actions" ref={el => registerRef(board.id, el)}>
                       <button
-                        className="menu-button"
+                        className="lr-menu-btn"
                         onClick={e => {
                           e.preventDefault();
                           toggleMenu(board.id);

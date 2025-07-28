@@ -90,7 +90,7 @@ const TaskCard = ({ task, onDelete, onClick, onUpdate }) => {
         {!isEditing && (
           <button
             ref={buttonRef}
-            className="menu-button"
+            className="lr-menu-btn"
             onClick={e => {
               e.stopPropagation();
               setMenuOpen(!menuOpen);
@@ -138,17 +138,11 @@ const TaskCard = ({ task, onDelete, onClick, onUpdate }) => {
           </div>
         </div>
       ) : (
-        <div
-          className="task-display"
-          onClick={e => {
-            e.stopPropagation();
-            setIsEditing(true);
-          }}
-        >
+        <div className="task-display">
           <div className="task-display-content">
             <span>{title}</span>
             <button
-              className="edit-button"
+              className="lr-edit-btn"
               onClick={e => {
                 e.stopPropagation();
                 setIsEditing(true);

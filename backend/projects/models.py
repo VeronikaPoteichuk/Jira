@@ -2,11 +2,13 @@ from django.db import models
 from django.conf import settings
 import hashlib
 from cryptography.fernet import Fernet, InvalidToken
+import os
 
-FERNET_KEY = settings.FERNET_KEY
+FERNET_KEY = os.environ.get("FERNET_KEY")
 if not FERNET_KEY:
     raise RuntimeError(
-        "FERNET_KEY is not set in Django settings. Please set it in your .env and load it in settings.py!"
+        "FERNET_KEY is not set in docker-compose. Please set it in your docker-compose or ",
+        ".env and load it in settings.py!",
     )
 fernet = Fernet(FERNET_KEY.encode())
 

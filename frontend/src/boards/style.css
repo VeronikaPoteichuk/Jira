@@ -45,7 +45,7 @@
   padding: 0.5rem 0.5rem 0.5rem 2rem;
   font-size: 1rem;
   border: 1px solid #ccc;
-  border-radius: 8px;
+  border-radius: 6px;
   transition: background-color 0.2s ease;
 }
 
@@ -94,18 +94,29 @@
 .column h2 {
   font-weight: 600;
   color: #172b4d;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0;
   font-size: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
   padding: 4px;
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .column h2:hover {
   background-color: rgba(9, 30, 66, 0.08);
+}
+
+.add-new-column {
+  background-color: #ebecf0;
+  border-radius: 8px;
+  padding: 1rem;
+  min-width: 270px;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .edit-column-name {
@@ -116,11 +127,12 @@
   margin-bottom: 0.75rem;
 }
 
-.edit-column-name input {
+.edit-column-name input,
+.column-input {
   width: 100%;
   padding: 6px 8px;
   border: 2px solid #0079bf;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 1rem;
   background: white;
   color: #172b4d;
@@ -132,11 +144,12 @@
   width: 100%;
 }
 
-.edit-btn {
+.edit-btn,
+.add-column-btn {
   flex: 1;
   padding: 6px 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
@@ -165,7 +178,7 @@
   background-color: #5aac44;
   color: white;
   font-size: 0.75rem;
-  border-radius: 8px;
+  border-radius: 5px;
   min-width: 25px;
   min-height: 25px;
   justify-content: space-evenly;
@@ -182,17 +195,17 @@
   color: #888;
 }
 
-.add-column-btn {
+.add-new-column-btn {
   min-width: 300px;
   padding: 1rem;
   border: 2px dashed #ccc;
-  border-radius: 8px;
+  border-radius: 6px;
   background: transparent;
   cursor: pointer;
   transition: background 0.2s ease;
 }
 
-.add-column-btn:hover {
+.add-new-column-btn:hover {
   background: #ebecf0;
 }
 
@@ -269,7 +282,7 @@
   background-color: #fff;
   padding: 2rem;
   border-radius: 8px;
-  width: 400px;
+  width: 500px;
   max-width: 90%;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   z-index: 1001;
@@ -305,7 +318,7 @@
   background-color: #e74c3c;
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.5s ease;
 }
@@ -320,7 +333,7 @@
   padding: 0.6rem 1rem;
   border: 1px solid #ccc;
   background-color: #fff;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.5s ease;
 }
@@ -388,11 +401,13 @@
   position: relative;
 }
 
-.menu-button {
-  background: transparent;
+.task-top-bar .lr-menu-btn {
   border: none;
-  cursor: pointer;
-  margin-right: 0.5rem;
+  background: transparent;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
 }
 
 .task-menu {
@@ -401,7 +416,7 @@
   right: 0;
   background: white;
   border: 1px solid #ccc;
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 6px;
   z-index: 10;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
@@ -434,7 +449,7 @@
   padding: 8px;
   resize: none;
   border: 1px solid #a5c8ff;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 14px;
   line-height: 1.4;
   background-color: #e6f0ff;
@@ -445,7 +460,7 @@
 
 .edit-actions {
   display: flex;
-  gap: 8px;
+  gap: 5px;
   align-self: flex-end;
 }
 
@@ -456,37 +471,38 @@
   border-radius: 6px;
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 35px;
 }
 
 .action-btn:hover {
   background: #f0f0f0;
 }
 
-.edit-button {
+.lr-edit-btn {
   flex: 1;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  transition: background-color 0.2s ease;
-  max-height: 25px;
-  max-width: 25px;
+  width: 30px;
   background: none;
   margin-left: 5px;
+  padding: 5px;
 }
 
-.edit-button:hover {
+.lr-edit-btn,
+.task-top-bar .lr-menu-btn:hover {
   background-color: rgba(9, 30, 66, 0.08);
 }
 
-.task-display-content .edit-button {
+.task-display-content .lr-edit-btn {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
 }
 
-.task-card:hover .task-display-content .edit-button {
+.task-card:hover .task-display-content .lr-edit-btn {
   opacity: 1;
   pointer-events: auto;
 }
@@ -553,7 +569,7 @@
   max-height: 40px;
   width: -webkit-fill-available;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 0 16px;
   font-size: 25px;
   font-weight: bolder;
@@ -588,7 +604,7 @@
   width: 100%;
   padding: 10px;
   font-size: 14px;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid #dfe1e6;
   resize: none;
   overflow-y: auto;
@@ -613,7 +629,7 @@
   padding: 6px 0;
   cursor: pointer;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   color: #172b4d;
 }
 
@@ -682,7 +698,7 @@
   color: white;
   border: none;
   padding: 6px 16px;
-  border-radius: 8px;
+  border-radius: 6px;
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -702,7 +718,7 @@
   background-color: transparent;
   border: 1px solid #dfe1e6;
   padding: 6px 16px;
-  border-radius: 8px;
+  border-radius: 6px;
   font-weight: 500;
   color: #42526e;
   cursor: pointer;
@@ -725,7 +741,7 @@
 .task-sidebar {
   width: 350px;
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: 6px;
   margin-right: 2rem;
   max-height: 300px;
   border: 1px solid #dfe1e6;
@@ -773,7 +789,7 @@
   border: none;
   background: transparent;
   padding: 5px;
-  border-radius: 8px;
+  border-radius: 6px;
   color: royalblue;
 }
 
@@ -819,7 +835,7 @@
 .comment-item {
   border: 1px solid #dfe1e6;
   padding: 0.5rem 0.75rem;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 14px;
   color: #172b4d;
   margin-right: 1px;
@@ -862,7 +878,7 @@
   border-bottom: 1px solid #eee;
   display: flex;
   flex-direction: column;
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .task-history-item:hover {
@@ -878,7 +894,7 @@
   border: 1px solid gray;
   padding: 2px;
   background: transparent;
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .history-filter:active {
@@ -905,7 +921,7 @@
 
 .toolbar-comments {
   border: 1px solid #dfe1e6;
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 12px;
   background-color: #ffffff;
   box-shadow: 0 1px 2px rgba(9, 30, 66, 0.08);
@@ -930,6 +946,7 @@
   transition:
     background-color 0.2s,
     border-color 0.2s;
+  width: 35px;
 }
 
 .button-click:hover {
@@ -940,7 +957,7 @@
 .comments-editor {
   max-height: 100px;
   padding: 8px;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid #dfe1e6;
   font-size: 14px;
   line-height: 1.5;
@@ -970,7 +987,7 @@
   color: #ffffff;
   border: none;
   padding: 6px 16px;
-  border-radius: 8px;
+  border-radius: 6px;
   font-weight: 500;
   font-size: 14px;
   cursor: pointer;

@@ -69,6 +69,9 @@
   width: 150px;
   border-radius: 20px;
   background: linear-gradient(104deg, #c0cbe2, #7798cb);
+  transition:
+    color 0.3s ease,
+    transform 0.3s ease;
 }
 
 .try-btn:hover,
@@ -133,6 +136,9 @@
   width: 100px;
   border-radius: 20px;
   background: linear-gradient(104deg, #c0cbe2, #7798cb);
+  transition:
+    color 0.3s ease,
+    transform 0.3s ease;
 }
 
 .how-btn {
