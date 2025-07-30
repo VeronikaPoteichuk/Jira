@@ -22,13 +22,22 @@ const Header = ({ onToggleSidebar }) => {
       });
   }, [projectId]);
 
-  const handleLogout = async () => {
+  const handleLogout = async e => {
+    if (e && e.preventDefault) e.preventDefault();
+    const refresh = localStorage.getItem("refresh");
     try {
-      await axiosInstance.post("/api/auth/logout/");
-    } catch (err) {}
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    navigate("/");
+      if (refresh) {
+        await axiosInstance.post("/api/auth/logout/", { refresh });
+      } else {
+        console.warn("No refresh in localStorage");
+      }
+    } catch (err) {
+      alert("Logout error: " + (err?.response?.data?.detail || err.message));
+      console.error("Logout error:", err);
+    }
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
+    navigate("/auth");
   };
 
   return (
@@ -39,7 +48,7 @@ const Header = ({ onToggleSidebar }) => {
       <a href="/project-page" className="header-title">
         {projectName || "Jira-like system"}
       </a>
-      <button className="logout-button" onClick={handleLogout}>
+      <button className="logout-button" type="button" onClick={handleLogout}>
         <LogOut className="lr-logout-btn" /> Logout
       </button>
     </header>

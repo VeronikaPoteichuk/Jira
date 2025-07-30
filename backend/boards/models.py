@@ -65,7 +65,9 @@ class Task(models.Model):
                     or 0
                 )
                 self.id_in_board = last_id + 1
-        self.full_clean()
+
+        if not kwargs.get("update_fields"):
+            self.full_clean()
         super().save(*args, **kwargs)
 
     def clean(self):
@@ -76,11 +78,16 @@ class Task(models.Model):
             column__board=board, id_in_board=self.id_in_board
         ).exclude(pk=self.pk)
         if existing.exists():
-            raise ValidationError("id_in_board must be unique within the board.")
+            existing_task = existing.first()
+            raise ValidationError(
+                f"id_in_board must be unique within the board. Conflict with task id={existing_task.pk}, id_in_board={existing_task.id_in_board}."
+            )
 
 
 class Comment(models.Model):
-    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="comments")
+    task = models.ForeignKey(
+        Task, on_delete=models.CASCADE, related_name="comments", db_index=True
+    )
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)

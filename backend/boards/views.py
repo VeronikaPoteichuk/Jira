@@ -181,6 +181,8 @@ class TaskViewSet(ModelViewSet):
         updated = self.get_object()
 
         channel_layer = get_channel_layer()
+        send_data = []
+
         if updated.title != old_title:
             history = TaskHistory.objects.create(
                 task=updated,
@@ -188,41 +190,42 @@ class TaskViewSet(ModelViewSet):
                 details=f"<u>{old_title}</u> &rArr; <u>{updated.title}</u>.",
                 source="system",
             )
-            async_to_sync(channel_layer.group_send)(
-                f"task_{updated.id}",
+            send_data.append(
                 {
-                    "type": "send_history_update",
-                    "data": {
-                        "action": f"<strong>{request.user.username}</strong> changed <u>Title</u>",
-                        "details": f"<u>{old_title}</u> &rArr; <u>{updated.title}</u>.",
-                        "created_at": str(history.created_at),
-                        "id": updated.id,
-                        "source": "system",
-                    },
-                },
+                    "action": f"<strong>{request.user.username}</strong> changed <u>Title</u>",
+                    "details": f"<u>{old_title}</u> &rArr; <u>{updated.title}</u>.",
+                    "created_at": str(history.created_at),
+                    "id": updated.id,
+                    "source": "system",
+                }
             )
+
         if updated.description == "":
             updated.description = "None"
 
         if updated.description != old_description:
-
             history = TaskHistory.objects.create(
                 task=updated,
                 action=f"<strong>{request.user.username}</strong> changed <u>Description</u>",
                 details=f"<u>{old_description}</u> &rArr; <u>{updated.description}</u>",
                 source="system",
             )
+            send_data.append(
+                {
+                    "action": f"<strong>{request.user.username}</strong> changed <u>Description</u>",
+                    "details": f"<u>{old_description}</u> &rArr; <u>{updated.description}</u>",
+                    "created_at": str(history.created_at),
+                    "id": updated.id,
+                    "source": "system",
+                }
+            )
+
+        if send_data:
             async_to_sync(channel_layer.group_send)(
                 f"task_{updated.id}",
                 {
                     "type": "send_history_update",
-                    "data": {
-                        "action": f"<strong>{request.user.username}</strong> changed <u>Description</u>",
-                        "details": f"<u>{old_description}</u> &rArr; <u>{updated.description}</u>",
-                        "created_at": str(history.created_at),
-                        "id": updated.id,
-                        "source": "system",
-                    },
+                    "data": send_data if len(send_data) > 1 else send_data[0],
                 },
             )
 
