@@ -61,6 +61,9 @@ services:
       DB_PORT: 5432
       DJANGO_SECRET_KEY: "django-insecure-!wxs1%tcz682o!22sq&4rltb@6uluy5l_qo-1f&n^xp"
       DJANGO_DEBUG: "True"
+      FERNET_KEY: "tlnTsY1PfNXItz7tbuQBQNOQXiqY8yDOzf7xV94Kqeo="
+      DJANGO_SETTINGS_MODULE: "jira.test_settings"
+      DJANGO_TESTING: "True"
     command: >
       sh -c "python manage.py migrate && pytest --cov --cov-report=term-missing --cov-config=.coveragerc"
 
@@ -83,6 +86,7 @@ services:
       DB_PORT: 5432
       DJANGO_SECRET_KEY: "django-insecure-!wxs1%tcz682o!22sq&4rltb@6uluy5l_qo-1f&n^xp"
       DJANGO_DEBUG: "True"
+      FERNET_KEY: "tlnTsY1PfNXItz7tbuQBQNOQXiqY8yDOzf7xV94Kqeo="
     healthcheck:
       test: ["CMD-SHELL", "pgrep cron || exit 1"]
       interval: 30s

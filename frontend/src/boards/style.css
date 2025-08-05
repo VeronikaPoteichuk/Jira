@@ -491,7 +491,7 @@
   padding: 5px;
 }
 
-.lr-edit-btn,
+.lr-edit-btn:hover,
 .task-top-bar .lr-menu-btn:hover {
   background-color: rgba(9, 30, 66, 0.08);
 }
