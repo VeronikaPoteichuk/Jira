@@ -1,3 +1,158 @@
+# Jira-like Kanban System
+
+A comprehensive project management system with Kanban boards, user management, and GitHub integration.
+
+## Installation
+
+### Prerequisites
+
+Before you begin, ensure you have the following installed on your system:
+
+- **Git** - for cloning the repository
+- **Python 3.8+** - for backend development
+- **Node.js 16+** - for frontend development
+- **Docker & Docker Compose** - for containerized deployment
+- **PostgreSQL** - database
+
+### Cloning the Project
+
+```bash
+# Clone the repository
+git clone https://github.com/VeronikaPoteichuk/Jira.git
+cd Jira
+
+# Or if you have SSH access
+git clone git@github.com:VeronikaPoteichuk/Jira.git
+cd Jira
+```
+
+## Setup
+
+### Option 1: Local Development Setup
+
+#### Backend Setup
+
+1. **Create and activate virtual environment:**
+
+```bash
+
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment
+# On Linux/macOS:
+source venv/bin/activate
+
+# On Windows:
+venv\Scripts\activate
+```
+
+### Option 2: Docker Setup (Recommended)
+
+#### Using Docker Compose
+
+1. **Build and start all services:**
+
+```bash
+# From the root directory
+docker-compose up --build
+```
+
+2. **Run database migrations:**
+
+```bash
+# In a new terminal, run migrations
+docker-compose exec backend python manage.py migrate
+
+# Create superuser
+docker-compose exec backend python manage.py createsuperuser
+```
+
+3. **Access the application:**
+
+- **Frontend:** http://localhost:3000
+- **Backend API:** http://localhost:8000
+- **Admin Panel:** http://localhost:8000/admin
+- **API Documentation:** http://localhost:8000/api/schema/swagger-ui/
+
+## Running the Application
+
+### Local Development
+
+#### Backend Server
+
+```bash
+
+# Activate virtual environment
+source venv/bin/activate
+
+# Navigate to backend directory
+cd backend
+
+# Run development server
+python manage.py runserver
+
+# Or run with specific host and port
+python manage.py runserver 0.0.0.0:8000
+```
+
+#### Frontend Development Server
+
+```bash
+# Navigate to frontend directory
+cd frontend
+
+# Start development server
+npm start
+
+# Or run with specific port
+PORT=3000 npm start
+```
+
+### Production Deployment
+
+For production deployment, ensure you:
+
+1. **Set proper environment variables:**
+
+   - `DEBUG=False`
+   - `SECRET_KEY` (strong, unique key)
+   - `DATABASE_URL` (production database)
+   - `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`
+
+2. **Configure static files:**
+
+```bash
+# Collect static files
+python manage.py collectstatic
+
+# Or with Docker
+docker-compose exec backend python manage.py collectstatic
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Database connection errors:**
+
+   - Ensure PostgreSQL is running
+   - Check database credentials in `.env`
+   - Run migrations: `python manage.py migrate`
+
+2. **Frontend build errors:**
+
+   - Clear node_modules: `rm -rf node_modules && npm install`
+   - Check Node.js version compatibility
+
+3. **Docker issues:**
+
+   - Rebuild containers: `docker-compose down && docker-compose up --build`
+   - Check Docker logs: `docker-compose logs`
+
+4. **WebSocket connection issues:**
+   - Check WebSocket routing configuration
+
 ## Functionality of a Jira-like System (Kanban) with User Addition to Projects and GitLab Integration
 
 1. Authentication and Authorization:

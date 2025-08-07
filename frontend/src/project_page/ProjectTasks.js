@@ -7,7 +7,7 @@ import EditTaskModal from "../boards/EditTaskModal";
 import AddTaskToggle from "../boards/AddTaskToggle";
 import "./style.css";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 15;
 
 const ProjectTasks = () => {
   const [tasks, setTasks] = useState([]);
@@ -29,8 +29,6 @@ const ProjectTasks = () => {
   const fetchTasks = useCallback(async () => {
     try {
       const response = await axiosInstance.get(`/api/boards/${cleanBoardId}/tasks/`);
-      console.log("CleanBoaedId:", cleanBoardId);
-      console.log("Response data:", response.data);
       setTasks(response.data);
     } catch (error) {
       handleApiError(error, "Failed to load tasks.");
@@ -294,7 +292,9 @@ const ProjectTasks = () => {
                 <tr key={task.id}>
                   <td>
                     <button className="task-key-button" onClick={() => openTaskModal(task)}>
-                      {task.project_name && task.id ? `${task.project_name}-${task.id}` : ""}
+                      {task.board_name && task.id_in_board
+                        ? `${task.board_name}-${task.id_in_board}`
+                        : ""}
                     </button>
                   </td>
                   <td onClick={() => handleTitleClick(task)} className="clickable-cell">

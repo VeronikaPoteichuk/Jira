@@ -32,6 +32,7 @@ const Board = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { boardId } = useParams();
   const cleanBoardId = boardId.replace(/^board-/, "");
+  const [board, setBoard] = useState(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -46,6 +47,7 @@ const Board = () => {
     if (!boardId) return;
     axiosInstance.get(`/api/boards/${cleanBoardId}/`).then(res => {
       setColumns(res.data.columns);
+      setBoard(res.data);
     });
   }, [boardId]);
 
@@ -58,7 +60,7 @@ const Board = () => {
       setActiveColumn(column);
     } else {
       const sourceColumn = columns.find(col => col.id === parseInt(columnId));
-      const task = sourceColumn.tasks.find(t => t.id === parseInt(taskId));
+      const task = sourceColumn.tasks.find(t => t.id_in_board === parseInt(taskId));
       setActiveTask(task);
     }
   };
@@ -94,7 +96,7 @@ const Board = () => {
     const targetCol = newColumns.find(col => col.id === parseInt(over.columnId));
     if (!sourceCol || !targetCol) return;
 
-    const fromIndex = sourceCol.tasks.findIndex(t => t.id === parseInt(active.taskId));
+    const fromIndex = sourceCol.tasks.findIndex(t => t.id_in_board === parseInt(active.taskId));
     if (fromIndex === -1) return;
 
     const [movedTask] = sourceCol.tasks.splice(fromIndex, 1);
@@ -103,7 +105,7 @@ const Board = () => {
     if (over.taskId === "placeholder") {
       targetCol.tasks.push(movedTask);
     } else {
-      const toIndex = targetCol.tasks.findIndex(t => t.id === parseInt(over.taskId));
+      const toIndex = targetCol.tasks.findIndex(t => t.id_in_board === parseInt(over.taskId));
       const insertIndex = toIndex === -1 ? targetCol.tasks.length : toIndex;
       targetCol.tasks.splice(insertIndex, 0, movedTask);
     }
@@ -114,7 +116,7 @@ const Board = () => {
     await axiosInstance.post("/api/tasks/reorder/", {
       tasks: newColumns.flatMap(col =>
         col.tasks.map((task, index) => ({
-          id: task.id,
+          id: task.id_in_board,
           order: index,
           column: col.id,
         })),
@@ -153,24 +155,37 @@ const Board = () => {
   };
 
   const handleAddColumn = async () => {
+    if (columns.some(col => col.isNew)) return;
+    setColumns(prev => [
+      ...prev,
+      {
+        id: `new-${Date.now()}`,
+        name: "",
+        tasks: [],
+        isNew: true,
+        order: columns.length,
+      },
+    ]);
+  };
+
+  const handleCreateColumn = async (name, tempId) => {
     try {
       const res = await axiosInstance.post("/api/columns/", {
-        name: "New column",
+        name,
         board: cleanBoardId,
-        order: columns.length,
+        order: columns.length - 1,
       });
-
-      setColumns(prev => [
-        ...prev,
-        {
-          ...res.data,
-          tasks: [],
-          isNew: true,
-        },
-      ]);
+      setColumns(prev =>
+        prev.map(col => (col.id === tempId ? { ...res.data, tasks: [], isNew: false } : col)),
+      );
     } catch (error) {
-      console.error("Error adding column:", error.response?.data || error.message);
+      setColumns(prev => prev.filter(col => col.id !== tempId));
+      console.error("Error creating column:", error.response?.data || error.message);
     }
+  };
+
+  const handleCancelCreateColumn = tempId => {
+    setColumns(prev => prev.filter(col => col.id !== tempId));
   };
 
   const handleDeleteColumn = async columnId => {
@@ -208,11 +223,11 @@ const Board = () => {
   const handleUpdateTask = updatedTask => {
     setColumns(prevColumns =>
       prevColumns.map(column => {
-        if (column.tasks.some(task => task.id === updatedTask.id)) {
+        if (column.tasks.some(task => task.id_in_board === updatedTask.id_in_board)) {
           return {
             ...column,
             tasks: column.tasks.map(task =>
-              task.id === updatedTask.id ? { ...task, ...updatedTask } : task,
+              task.id_in_board === updatedTask.id_in_board ? { ...task, ...updatedTask } : task,
             ),
           };
         }
@@ -221,9 +236,9 @@ const Board = () => {
     );
   };
 
-  const getTaskById = id => {
+  const getTaskById = id_in_board => {
     for (const col of columns) {
-      const task = col.tasks.find(t => t.id === id);
+      const task = col.tasks.find(t => t.id_in_board === id_in_board);
       if (task) return task;
     }
     return null;
@@ -302,40 +317,76 @@ const Board = () => {
                     maxHeight: "100%",
                   }}
                 >
-                  <Column
-                    column={column}
-                    onUpdateName={handleUpdateColumnName}
-                    onDelete={handleDeleteColumn}
-                  />
-
-                  <SortableContext
-                    items={column.tasks.map(task => `task:${column.id}:${task.id}`)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    <div className="tasks-scroll-area">
-                      {filterTasks(column.tasks).map(task => (
-                        <TaskCard
-                          key={task.id}
-                          task={{ ...task, column: column.id }}
-                          onDelete={taskId => handleDeleteTask(taskId, column.id)}
-                          onClick={taskId => {
-                            const freshTask = getTaskById(taskId);
-                            setEditingTask(freshTask);
-                          }}
-                          onUpdate={handleUpdateTask}
-                        />
-                      ))}
+                  {column.isNew ? (
+                    <div className="add-new-column">
+                      <input
+                        autoFocus
+                        type="text"
+                        value={column.name}
+                        placeholder="New column"
+                        className="column-input"
+                        onChange={e => {
+                          const value = e.target.value;
+                          setColumns(prev =>
+                            prev.map(col => (col.id === column.id ? { ...col, name: value } : col)),
+                          );
+                        }}
+                        // style={{ width: "100%", marginBottom: 8, fontWeight: 600, fontSize: 18, border: "1px solid #aaa", borderRadius: 4, padding: 4 }}
+                      />
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button
+                          className="add-column-btn"
+                          style={{ background: "#4caf50", color: "white", flex: 1 }}
+                          disabled={!column.name.trim()}
+                          onClick={() => handleCreateColumn(column.name, column.id)}
+                        >
+                          Create
+                        </button>
+                        <button
+                          className="add-column-btn"
+                          style={{ background: "#f44336", color: "white", flex: 1 }}
+                          onClick={() => handleCancelCreateColumn(column.id)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     </div>
-                  </SortableContext>
-
-                  <div className="add-task-fixed">
-                    <AddTaskToggle columnId={column.id} onAddTask={handleAddTask} />
-                  </div>
+                  ) : (
+                    <>
+                      <Column
+                        column={column}
+                        onUpdateName={handleUpdateColumnName}
+                        onDelete={handleDeleteColumn}
+                      />
+                      <SortableContext
+                        items={column.tasks.map(task => `task:${column.id}:${task.id_in_board}`)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        <div className="tasks-scroll-area">
+                          {filterTasks(column.tasks).map(task => (
+                            <TaskCard
+                              key={task.id_in_board}
+                              task={{ ...task, column: column.id }}
+                              onDelete={taskId => handleDeleteTask(taskId, column.id)}
+                              onClick={taskId => {
+                                const freshTask = getTaskById(taskId);
+                                setEditingTask(freshTask);
+                              }}
+                              onUpdate={handleUpdateTask}
+                            />
+                          ))}
+                        </div>
+                      </SortableContext>
+                      <div className="add-task-fixed">
+                        <AddTaskToggle columnId={column.id} onAddTask={handleAddTask} />
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
           </SortableContext>
-          <button onClick={handleAddColumn} className="add-column-btn">
+          <button onClick={handleAddColumn} className="add-new-column-btn">
             + Add column
           </button>
         </div>
@@ -346,7 +397,7 @@ const Board = () => {
           ) : activeTask ? (
             <TaskCard
               task={activeTask}
-              onDelete={() => handleDeleteTask(activeTask.id, activeTask.column)}
+              onDelete={() => handleDeleteTask(activeTask.id_in_board, activeTask.column)}
             />
           ) : null}
         </DragOverlay>
@@ -358,6 +409,7 @@ const Board = () => {
           onClose={() => setEditingTask(null)}
           onSave={handleUpdateTask}
           onDelete={taskId => handleDeleteTask(taskId, editingTask.column)}
+          githubRepo={board.github_repo}
         />
       )}
     </>

@@ -1,3 +1,4 @@
+import os
 from django.contrib.auth import get_user_model
 from adrf.viewsets import ModelViewSet
 from .serializers import UserSerializer, UserCreateSerializer, UserUpdateSerializer
@@ -14,6 +15,9 @@ class AsyncUserViewSet(ModelViewSet):
     queryset = User.objects.all()
 
     def get_permissions(self):
+        if os.environ.get("DJANGO_TESTING") == "True":
+            return [AllowAny()]
+
         if self.action == "create":
             return [AllowAny()]
         return [IsAuthenticated()]

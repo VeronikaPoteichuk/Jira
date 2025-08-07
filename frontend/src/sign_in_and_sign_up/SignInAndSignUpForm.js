@@ -68,11 +68,7 @@ const AuthFormContent = () => {
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
 
-      const projectId = "1";
-      const boardId = "1";
-
       navigate(`/project-page`);
-      // navigate(`/project-page/project-${projectId}/board-${boardId}`);
     } catch (error) {
       console.error(error);
       alert("Login failed");
@@ -102,7 +98,7 @@ const AuthFormContent = () => {
         const firstProjectId = projectsRes.data[0]?.id;
 
         if (firstProjectId) {
-          navigate(`/project-page/${firstProjectId}`);
+          navigate(`/project-page`);
         } else {
           alert("No projects found for this user.");
           navigate("/");

@@ -7,7 +7,7 @@ import { useDeleteModal } from "../hooks/DeleteModalContext";
 
 const TaskCard = ({ task, onDelete, onClick, onUpdate }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: `task:${task.column}:${task.id}`,
+    id: `task:${task.column}:${task.id_in_board}`,
   });
 
   const [isEditing, setIsEditing] = useState(false);
@@ -84,13 +84,13 @@ const TaskCard = ({ task, onDelete, onClick, onUpdate }) => {
       {...(isEditing ? {} : listeners)}
       className="task-card hover-group"
       data-dragging={isDragging}
-      onClick={() => onClick(task.id)}
+      onClick={() => onClick(task.id_in_board)}
     >
       <div className="task-top-bar" onClick={() => onClick(task)}>
         {!isEditing && (
           <button
             ref={buttonRef}
-            className="menu-button"
+            className="lr-menu-btn"
             onClick={e => {
               e.stopPropagation();
               setMenuOpen(!menuOpen);
@@ -138,17 +138,11 @@ const TaskCard = ({ task, onDelete, onClick, onUpdate }) => {
           </div>
         </div>
       ) : (
-        <div
-          className="task-display"
-          onClick={e => {
-            e.stopPropagation();
-            setIsEditing(true);
-          }}
-        >
+        <div className="task-display">
           <div className="task-display-content">
             <span>{title}</span>
             <button
-              className="edit-button"
+              className="lr-edit-btn"
               onClick={e => {
                 e.stopPropagation();
                 setIsEditing(true);
@@ -162,7 +156,7 @@ const TaskCard = ({ task, onDelete, onClick, onUpdate }) => {
       <div className="task-meta">
         <input type="checkbox" defaultChecked onClick={e => e.stopPropagation()} />
         <span className="task-id">
-          {task.project_name}-{task.id}
+          {task.board_name}-{task.id_in_board}
         </span>
       </div>
     </div>

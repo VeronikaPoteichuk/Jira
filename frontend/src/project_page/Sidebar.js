@@ -82,7 +82,7 @@ const Sidebar = () => {
           </dt>
 
           {isBoardsOpen && !cleanProjectId && (
-            <dd style={{ paddingLeft: "1rem", color: "#888" }}>Сначала выберите проект</dd>
+            <dd style={{ paddingLeft: "1rem", color: "#888" }}>First, select a project</dd>
           )}
 
           {isBoardsOpen &&
