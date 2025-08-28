@@ -102,13 +102,24 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+      - /app/dist
     depends_on:
       - backend
     stdin_open: true
     tty: true
     networks:
       - default
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - FAST_REFRESH=true
     command: npm start
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   nginx:
     image: nginx:latest

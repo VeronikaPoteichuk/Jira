@@ -10,6 +10,7 @@ module.exports = {
     clean: true,
   },
   mode: "development",
+  devtool: "eval-source-map", 
   module: {
     rules: [
       {
@@ -41,7 +42,7 @@ module.exports = {
     host: "0.0.0.0", 
     historyApiFallback: true,
     hot: true, 
-    liveReload: true,
+    liveReload: true, 
     watchFiles: {
       paths: ["src/**/*", "public/**/*"], 
       options: {
@@ -54,7 +55,9 @@ module.exports = {
         errors: true,
         warnings: false,
       },
+      logging: "info", 
     },
+    compress: true, 
     proxy: [
       {
         context: ["/users"],
@@ -62,5 +65,20 @@ module.exports = {
         changeOrigin: true,
       },
     ],
+    allowedHosts: "all",
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+    },
+  },
+  optimization: {
+    removeAvailableModules: false,
+    removeEmptyChunks: false,
+    splitChunks: false,
+  },
+  cache: {
+    type: "filesystem",
+    buildDependencies: {
+      config: [__filename],
+    },
   },
 };
