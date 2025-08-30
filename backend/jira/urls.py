@@ -33,7 +33,7 @@ def csrf(request):
 
 router = DefaultRouter()
 router.include_root_view = False
-router.register(r"users", AsyncUserViewSet, basename="user")
+router.register(r"api/users", AsyncUserViewSet, basename="user")
 
 urlpatterns = [
     path("", include(router.urls)),
@@ -70,6 +70,7 @@ urlpatterns = [
     path(
         "api/tasks/<int:pk>/worklog/", TaskWorkLogAPIView.as_view(), name="task-worklog"
     ),
+    path("api/users/me/", AsyncUserViewSet.as_view({"get": "me"}), name="user-me"),
 ]
 
 

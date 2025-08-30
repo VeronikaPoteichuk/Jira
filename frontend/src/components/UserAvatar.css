@@ -1,0 +1,76 @@
+.user-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: white;
+  font-weight: 600;
+  text-align: center;
+  user-select: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.user-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.avatar-text {
+  line-height: 1;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Size variants */
+.avatar-small {
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+}
+
+.avatar-medium {
+  width: 48px;
+  height: 48px;
+  font-size: 18px;
+}
+
+.avatar-large {
+  width: 64px;
+  height: 64px;
+  font-size: 24px;
+}
+
+.avatar-xl {
+  width: 80px;
+  height: 80px;
+  font-size: 30px;
+}
+
+.avatar-xxl {
+  width: 120px;
+  height: 120px;
+  font-size: 40px;
+}
+
+/* Special size for profile page */
+.avatar-profile {
+  width: 120px;
+  height: 120px;
+  font-size: 40px;
+  margin-bottom: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .avatar-profile {
+    width: 100px;
+    height: 100px;
+    font-size: 32px;
+  }
+
+  .avatar-xxl {
+    width: 100px;
+    height: 100px;
+    font-size: 32px;
+  }
+}

@@ -1,8 +1,8 @@
 FROM python:3.13-slim AS base
 
-RUN apt-get update && \
+RUN apt-get update && \ 
     pip install --no-cache-dir uv==0.6.4 && \
-    apt-get install -y --no-install-recommends curl=7.88.1-10+deb12u12 && \
+    apt-get install -y --no-install-recommends curl=8.14.1-2 && \
     uv venv /opt/venv && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -29,7 +29,7 @@ FROM base AS tests
 WORKDIR /app
 
 RUN set -e && apt-get update && \
-    apt-get install -y --no-install-recommends git=1:2.39.5-0+deb12u2 && \
+    apt-get install -y --no-install-recommends git=1:2.47.2-0.2 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -44,7 +44,7 @@ CMD ["sh", "-c", "python manage.py migrate && pytest"]
 FROM base AS cron
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends cron=3.0pl1-162 && \
+    apt-get install -y --no-install-recommends cron=3.0pl1-197 dos2unix==7.5.2 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -52,7 +52,9 @@ COPY . .
 COPY cron/cronfile /etc/cron.d/cronfile
 COPY cron/entrypoint.sh /entrypoint.sh
 
-RUN chmod +x /entrypoint.sh && chmod 0644 /etc/cron.d/cronfile && \
+RUN dos2unix /entrypoint.sh && \
+    chmod +x /entrypoint.sh && \
+    chmod 0644 /etc/cron.d/cronfile && \
     touch /var/log/cron.log && \
     crontab /etc/cron.d/cronfile
 

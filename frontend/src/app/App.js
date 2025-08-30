@@ -7,6 +7,7 @@ import ProjectPage from "../project_page/ProjectPage";
 import Board from "../boards/Board";
 import Projects from "../project_page/Projects";
 import ProjectBoardsPage from "../project_page/ProjectBoardsPage";
+import UserAccount from "../personal_account/UserAccount";
 import { ToastContainer } from "react-toastify";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { DeleteModalProvider } from "../hooks/DeleteModalContext";
@@ -26,6 +27,7 @@ function App() {
             <Route path="/project-page" element={<Projects />} />
             {/* <Route path="/project-page/:projectId/:boardId" element={<Board />} /> */}
             <Route path="/project-page/:projectId" element={<ProjectBoardsPage />} />
+            <Route path="/profile" element={<UserAccount />} />
             <Route path="/github-success" element={<GitHubSuccess />} />
           </Routes>
         </HoveredEntityProvider>

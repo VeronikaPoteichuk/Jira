@@ -7,6 +7,7 @@ from rest_framework import status
 from asgiref.sync import sync_to_async
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import action
 
 User = get_user_model()
 
@@ -20,6 +21,8 @@ class AsyncUserViewSet(ModelViewSet):
 
         if self.action == "create":
             return [AllowAny()]
+        elif self.action == "me":
+            return [IsAuthenticated()]
         return [IsAuthenticated()]
 
     def get_serializer_class(self):
@@ -47,6 +50,15 @@ class AsyncUserViewSet(ModelViewSet):
         updated_user = await sync_to_async(serializer.save, thread_sensitive=True)()
         return Response(UserUpdateSerializer(updated_user).data)
 
+    async def partial_update(self, request, *args, **kwargs):
+        instance = await sync_to_async(self.get_object, thread_sensitive=True)()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        await sync_to_async(serializer.is_valid, thread_sensitive=True)(
+            raise_exception=True
+        )
+        updated_user = await sync_to_async(serializer.save, thread_sensitive=True)()
+        return Response(UserUpdateSerializer(updated_user).data)
+
     async def destroy(self, request, *args, **kwargs):
         try:
             instance = await sync_to_async(self.get_object, thread_sensitive=True)()
@@ -54,3 +66,15 @@ class AsyncUserViewSet(ModelViewSet):
             raise NotFound("User not found.")
         await sync_to_async(instance.delete, thread_sensitive=True)()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=["get"], url_path="me")
+    async def me(self, request, *args, **kwargs):
+        """Get current user profile"""
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "Authentication required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
