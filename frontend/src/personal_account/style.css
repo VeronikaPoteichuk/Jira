@@ -1,11 +1,9 @@
-/* UserAccount.js Styles - Jira Atlassian Style */
+/* UserAccount.js */
 
 .user-account {
   padding: 2rem;
   background-color: #f4f5f7;
   min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
-    "Cantarell", sans-serif;
 }
 
 .user-account-loading {
@@ -41,7 +39,7 @@
   margin: 0;
 }
 
-/* Profile Sidebar */
+/* Profile sidebar */
 .profile-sidebar {
   border: none;
   border-radius: 8px;
@@ -73,8 +71,7 @@
   position: absolute;
   bottom: 0;
   right: 0;
-  background: #0052cc !important;
-  color: #ffffff !important;
+  color: black !important;
   border-radius: 50%;
   width: 36px;
   height: 36px;
@@ -187,6 +184,7 @@
   font-size: 0.95rem;
   transition: all 0.2s ease;
   border-bottom: 2px solid transparent;
+  cursor: default;
 }
 
 .user-account .nav-link:hover {
@@ -583,11 +581,6 @@
 /* Hover Effects */
 .user-account .btn:hover {
   transform: translateY(-1px);
-  transition: transform 0.2s ease;
-}
-
-.profile-sidebar:hover {
-  transform: translateY(-2px);
   transition: transform 0.2s ease;
 }
 

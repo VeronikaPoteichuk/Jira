@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import axiosInstance from "../api/axios";
 import { useParams, useNavigate } from "react-router-dom";
 import "./style.css";
-import { LogOut } from "lucide-react";
+import { LogOut, User } from "lucide-react";
+import UserAvatar from "../components/UserAvatar";
 
 const Header = ({ onToggleSidebar }) => {
   const { projectId } = useParams();
   const [projectName, setProjectName] = useState("");
+  const [userData, setUserData] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,6 +23,19 @@ const Header = ({ onToggleSidebar }) => {
         setProjectName("Project");
       });
   }, [projectId]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axiosInstance.get("/api/users/me/");
+        setUserData(response.data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleLogout = async e => {
     if (e && e.preventDefault) e.preventDefault();
@@ -51,6 +66,13 @@ const Header = ({ onToggleSidebar }) => {
       <button className="logout-button" type="button" onClick={handleLogout}>
         <LogOut className="lr-logout-btn" /> Logout
       </button>
+      <a href="/profile" type="button" style={{ textDecoration: "none" }}>
+        {userData ? (
+          <UserAvatar user={userData} size="small" />
+        ) : (
+          <User className="lr-user-account-btn" />
+        )}
+      </a>
     </header>
   );
 };

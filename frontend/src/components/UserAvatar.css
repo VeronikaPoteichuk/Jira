@@ -18,7 +18,6 @@
 
 .avatar-text {
   line-height: 1;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 /* Size variants */
@@ -57,7 +56,6 @@
   width: 120px;
   height: 120px;
   font-size: 40px;
-  margin-bottom: 1rem;
 }
 
 /* Responsive adjustments */

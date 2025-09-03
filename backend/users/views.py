@@ -8,6 +8,7 @@ from asgiref.sync import sync_to_async
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import action
+from django.db.models import Count, Q
 
 User = get_user_model()
 
@@ -78,3 +79,26 @@ class AsyncUserViewSet(ModelViewSet):
 
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
+
+    @action(detail=False, methods=["get"], url_path="stats")
+    async def stats(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "Authentication required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        user = request.user
+
+        project_count = await sync_to_async(
+            lambda: user.projects.count()
+            + user.created_tasks.values("column__board__project").distinct().count()
+        )()
+
+        task_count = await sync_to_async(lambda: user.created_tasks.count())()
+
+        comment_count = await sync_to_async(lambda: user.comment_set.count())()
+
+        return Response(
+            {"projects": project_count, "tasks": task_count, "comments": comment_count}
+        )

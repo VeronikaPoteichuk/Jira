@@ -2,7 +2,6 @@ import React from "react";
 import "./UserAvatar.css";
 
 const UserAvatar = ({ user, size = "medium", className = "" }) => {
-  // Generate initials from user data
   const getInitials = user => {
     if (!user) return "?";
 
@@ -23,7 +22,6 @@ const UserAvatar = ({ user, size = "medium", className = "" }) => {
     return "?";
   };
 
-  // Generate consistent color based on user data
   const getAvatarColor = user => {
     if (!user) return "#6c757d";
 
@@ -34,7 +32,6 @@ const UserAvatar = ({ user, size = "medium", className = "" }) => {
       hash = seed.charCodeAt(i) + ((hash << 5) - hash);
     }
 
-    // Generate a color with good contrast
     const hue = Math.abs(hash) % 360;
     const saturation = 60 + (Math.abs(hash) % 20); // 60-80%
     const lightness = 45 + (Math.abs(hash) % 15); // 45-60%
