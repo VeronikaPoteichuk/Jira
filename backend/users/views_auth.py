@@ -1,6 +1,7 @@
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -25,6 +26,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
     def validate(self, attrs):
         data = super().validate(attrs)
+        self.user.last_login = timezone.now()
+        self.user.save(update_fields=["last_login"])
+
         data["user"] = {
             "id": self.user.id,
             "username": self.user.username,
@@ -83,6 +87,10 @@ class GoogleAuthView(APIView):
         user, _ = User.objects.get_or_create(
             email=email, defaults={"username": username}
         )
+
+        user.last_login = timezone.now()
+        user.save(update_fields=["last_login"])
+
         refresh = RefreshToken.for_user(user)
 
         return Response(

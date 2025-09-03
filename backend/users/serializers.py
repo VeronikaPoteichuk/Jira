@@ -12,6 +12,10 @@ class UserSerializer(Serializer):
     id = serializers.IntegerField(read_only=True)
     username = serializers.CharField(max_length=150)
     email = serializers.EmailField(required=False, allow_blank=True)
+    first_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
+    last_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
+    date_joined = serializers.DateTimeField(read_only=True)
+    last_login = serializers.DateTimeField(read_only=True)
 
     def validate_username(self, value):
         if len(value) > 150:
@@ -32,7 +36,7 @@ class UserSerializer(Serializer):
 class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["username", "email", "password"]
+        fields = ["username", "email", "first_name", "last_name", "password"]
         extra_kwargs = {
             "password": {
                 "write_only": True,
@@ -47,6 +51,22 @@ class UserCreateSerializer(serializers.ModelSerializer):
                     "max_length": "Username cannot be longer than 150 characters."
                 },
             },
+            "first_name": {
+                "max_length": 150,
+                "required": False,
+                "allow_blank": True,
+                "error_messages": {
+                    "max_length": "First name cannot be longer than 150 characters."
+                },
+            },
+            "last_name": {
+                "max_length": 150,
+                "required": False,
+                "allow_blank": True,
+                "error_messages": {
+                    "max_length": "Last name cannot be longer than 150 characters."
+                },
+            },
         }
 
     def validate_email(self, value):
@@ -57,6 +77,20 @@ class UserCreateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Enter a valid email address.")
         return value
 
+    def validate_first_name(self, value):
+        if value and len(value) > 150:
+            raise serializers.ValidationError(
+                "First name cannot be longer than 150 characters."
+            )
+        return value
+
+    def validate_last_name(self, value):
+        if value and len(value) > 150:
+            raise serializers.ValidationError(
+                "Last name cannot be longer than 150 characters."
+            )
+        return value
+
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
 
@@ -64,7 +98,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("id", "username", "email", "password")
+        fields = ("id", "username", "email", "first_name", "last_name", "password")
         extra_kwargs = {
             "password": {
                 "write_only": True,
@@ -78,6 +112,22 @@ class UserUpdateSerializer(serializers.ModelSerializer):
                 "max_length": 150,
                 "error_messages": {
                     "max_length": "Username cannot be longer than 150 characters."
+                },
+            },
+            "first_name": {
+                "max_length": 150,
+                "required": False,
+                "allow_blank": True,
+                "error_messages": {
+                    "max_length": "First name cannot be longer than 150 characters."
+                },
+            },
+            "last_name": {
+                "max_length": 150,
+                "required": False,
+                "allow_blank": True,
+                "error_messages": {
+                    "max_length": "Last name cannot be longer than 150 characters."
                 },
             },
         }
@@ -96,6 +146,20 @@ class UserUpdateSerializer(serializers.ModelSerializer):
                     )
             except ValidationError:
                 raise serializers.ValidationError("Enter a valid email address.")
+        return value
+
+    def validate_first_name(self, value):
+        if value and len(value) > 150:
+            raise serializers.ValidationError(
+                "First name cannot be longer than 150 characters."
+            )
+        return value
+
+    def validate_last_name(self, value):
+        if value and len(value) > 150:
+            raise serializers.ValidationError(
+                "Last name cannot be longer than 150 characters."
+            )
         return value
 
     def update(self, instance, validated_data):
